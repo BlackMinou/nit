@@ -232,6 +232,15 @@ end
 interface Set[E: Object]
 	super SimpleCollection[E]
 
+	#verify if the item is already in the Set
+	redef fun add(item: E) is abstract
+	#example of partial implementation
+	#do
+	#	if has(item) then
+	#		-> Implements the add method here
+	#	end
+	#end
+
 	redef fun has_only(item)
 	do
 		var l = length
