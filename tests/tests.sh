@@ -415,8 +415,13 @@ END
 			if [ "x$verbose" = "xtrue" ]; then
 				echo ""
 				echo "NIT_NO_STACK=1 ./$ff.bin" $args
-			fi
-			NIT_NO_STACK=1 $TIMEOUT "./$ff.bin" $args < "$inputs" > "$ff.res" 2>"$ff.err"
+			fi	
+			# fetching the first jvm lib found
+			shopt -s nullglob
+			paths=`echo /usr/lib/jvm/*/jre/lib/*/{client,server}/`
+			shopt -u nullglob
+			paths=( $paths )	
+			NIT_NO_STACK=1 LD_LIBRARY_PATH=${paths[0]} $TIMEOUT "./$ff.bin" $args < "$inputs" > "$ff.res" 2>"$ff.err"
 			if [ "x$verbose" = "xtrue" ]; then
 				cat "$ff.res"
 				cat >&2 "$ff.err"
