@@ -35,11 +35,15 @@ interface Object
 	# Unless specific code, you should not use this method.
 	fun is_same_type(other: Object): Bool is intern
 
+	# Return true if `self` and `other` are the same instance.
+	# Unless specific code, you should use `==` instead.
+	fun is_same_instance(other: nullable Object): Bool is intern
+
 	# Have `self` and `other` the same value?
 	##
 	# The exact meaning of "same value" is let to the subclasses.
-	# Implicitly, the default implementation, is `is`
-	fun ==(other: nullable Object): Bool do return self is other
+	# Implicitly, the default implementation, is `is_same_instance`
+	fun ==(other: nullable Object): Bool do return self.is_same_instance(other)
 
 	# Have `self` and `other` different values?
 	##
@@ -400,28 +404,6 @@ universal Int
 		end
 	end
 
-	# Execute 'each' for each integer in [self..last]
-	fun enumerate_to(last: Int)
-		!each(i: Int)
-	do
-		var cur = self
-		while cur <= last do
-			each(cur)
-			cur += 1
-		end
-	end
-
-	# Execute 'each' for each integer in [self..after[
-	fun enumerate_before(after: Int)
-		!each(i: Int)
-	do
-		var cur = self
-		while cur < after do
-			each(cur)
-			cur += 1
-		end
-	end
-
 	# The absolute value of self
 	#
 	#     assert (-10).abs   == 10
@@ -480,7 +462,7 @@ universal Char
 		else if is_digit then
 			return self.ascii - '0'.ascii
 		else
-			return self.to_lower.ascii - ('a'.ascii + 10)
+			return self.to_lower.ascii - 'a'.ascii + 10
 		end
 	end
 

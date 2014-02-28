@@ -32,7 +32,7 @@ Usage: $e [options] modulenames
 -v          Verbose (show tests steps)
 -h          This help
 --tap       Produce TAP output
---engine    Use a specific engine (default=nitc)
+--engine    Use a specific engine (default=nitg)
 --noskip    Do not skip a test even if the .skip file matches
 --[no]soso  Force enable (or disable) SOSO
 END
@@ -176,7 +176,7 @@ function process_result()
 		fi
 		echo >>$xml "<error message='fail out/$pattern.res $NSAV'/>"
 		echo >>$xml "<system-out><![CDATA["
-		head >>$xml -n 50 out/$pattern.diff.sav.log
+		cat -v out/$pattern.diff.sav.log | head >>$xml -n 50
 		echo >>$xml "]]></system-out>"
 		nok="$nok $pattern"
 		echo "$ii" >> "$ERRLIST"
@@ -188,7 +188,7 @@ function process_result()
 		fi
 		echo >>$xml "<error message='changed out/$pattern.res $NFIXME'/>"
 		echo >>$xml "<system-out><![CDATA["
-		head >>$xml -n 50 out/$pattern.diff.sav.log
+		cat -v out/$pattern.diff.sav.log | head >>$xml -n 50
 		echo >>$xml "]]></system-out>"
 		nok="$nok $pattern"
 		echo "$ii" >> "$ERRLIST"
@@ -200,13 +200,13 @@ function process_result()
 		fi
 		echo >>$xml "<skipped/>"
 		echo >>$xml "<system-out><![CDATA["
-		cat  >>$xml out/$pattern.res
+		cat -v >>$xml out/$pattern.res
 		echo >>$xml "]]></system-out>"
 		nos="$nos $pattern"
 	fi
 	if test -s out/$pattern.cmp.err; then
 		echo >>$xml "<system-err><![CDATA["
-		cat  >>$xml out/$pattern.cmp.err
+		cat -v >>$xml out/$pattern.cmp.err
 		echo >>$xml "]]></system-err>"
 	fi
 	echo >>$xml "</testcase>"
@@ -253,7 +253,7 @@ find_nitc()
 verbose=false
 stop=false
 tapcount=0
-engine=nitc
+engine=nitg
 noskip=
 while [ $stop = false ]; do
 	case $1 in
@@ -270,9 +270,6 @@ while [ $stop = false ]; do
 done
 enginebinname=$engine
 case $engine in
-	nitc)
-		savdirs="sav/$engine/fixme/ sav/$engine/ sav/sav/ sav/"
-		;;
 	nitg)
 		engine=nitg-s;
 		enginebinname=nitg;
@@ -301,6 +298,14 @@ case $engine in
 	niti)
 		enginebinname=nit
 		savdirs="sav/$engine/fixme/ sav/$engine/ sav/fixme/ sav/"
+		;;
+	nitc)
+		echo "disabled engine $engine"
+		exit 0
+		;;
+	*)
+		echo "unknown engine $engine"
+		exit 1
 		;;
 esac
 
@@ -456,7 +461,7 @@ END
 					test -z "$tap" && echo -n "==> $name "
 					echo "./$ff.bin $args" > "./$fff.bin"
 					chmod +x "./$fff.bin"
-					sh -c "NIT_NO_STACK=1 $TIMEOUT ./$fff.bin < $inputs > $fff.res 2>$fff.err"
+					WRITE="$fff.write" sh -c "NIT_NO_STACK=1 $TIMEOUT ./$fff.bin < $inputs > $fff.res 2>$fff.err"
 					if [ "x$verbose" = "xtrue" ]; then
 						cat "$fff.res"
 						cat >&2 "$fff.err"

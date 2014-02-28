@@ -501,12 +501,6 @@ redef class AConcreteMethPropdef
 			assert variable != null
 			variable.declared_type = mtype
 		end
-		for i in [0..mmethoddef.msignature.mclosures.length[ do
-			var mclosure = mmethoddef.msignature.mclosures[i]
-			var variable = self.n_signature.n_closure_decls[i].variable
-			assert variable != null
-			variable.declared_type = mclosure.mtype
-		end
 		v.visit_stmt(nblock)
 
 		if not nblock.after_flow_context.is_unreachable and mmethoddef.msignature.return_mtype != null then
@@ -646,9 +640,6 @@ redef class AVarAssignExpr
 end
 
 redef class AReassignFormExpr
-	# @depreciated use `reassign_callsite`
-	fun reassign_property: nullable MMethodDef do return self.reassign_callsite.mpropdef
-
 	# The method designed by the reassign operator.
 	var reassign_callsite: nullable CallSite
 
@@ -701,6 +692,8 @@ redef class AVarReassignExpr
 
 		var readtype = v.get_variable(self, variable)
 		if readtype == null then return
+
+		read_type = readtype
 
 		var writetype = variable.declared_type
 		if writetype == null then return
@@ -830,6 +823,11 @@ redef class AForExpr
 
 	private fun do_type_iterator(v: TypeVisitor, mtype: MType)
 	do
+		if mtype isa MNullType then
+			v.error(self, "Type error: 'for' cannot iterate over 'null'")
+			return
+		end
+
 		# get obj class
 		var objcla = v.get_mclass(self, "Object")
 		if objcla == null then return
@@ -838,7 +836,7 @@ redef class AForExpr
 		var unsafe_type = v.anchor_to(mtype)
 		if v.try_get_mproperty_by_name2(self, unsafe_type, "iterator") == null then
 			if v.try_get_mproperty_by_name2(self, unsafe_type, "iterate") == null then
-				v.error(self, "Type Error: Expected method 'iterator' in type {mtype}")
+				v.error(self, "Type Error: 'for' expects a type providing 'iterator' method, got '{mtype}'.")
 			else
 				v.modelbuilder.error(self, "NOT YET IMPLEMENTED: Do 'for' on {mtype}")
 			end
@@ -847,7 +845,7 @@ redef class AForExpr
 
 		var itdef = v.get_method(self, mtype, "iterator", true)
 		if itdef == null then
-			v.error(self, "Type Error: Expected method 'iterator' in type {mtype}")
+			v.error(self, "Type Error: 'for' expects a type providing 'iterator' method, got '{mtype}'.")
 			return
 		end
 		self.method_iterator = itdef.mproperty
@@ -855,7 +853,7 @@ redef class AForExpr
 		# check that iterator return something
 		var ittype = itdef.msignature.return_mtype
 		if ittype == null then
-			v.error(self, "Type Error: Expected method 'iterator' to return an Iterator or MapIterator type")
+			v.error(self, "Type Error: 'for' expects method 'iterator' to return an 'Iterator' or 'MapIterator' type'.")
 			return
 		end
 
@@ -870,7 +868,7 @@ redef class AForExpr
 			var coltype = ittype.supertype_to(v.mmodule, v.anchor, colit_cla)
 			var variables =  self.variables
 			if variables.length != 1 then
-				v.error(self, "Type Error: Expected one variable")
+				v.error(self, "Type Error: 'for' expects only one variable when using 'Iterator'.")
 			else
 				variables.first.declared_type = coltype.arguments.first
 			end
@@ -882,7 +880,7 @@ redef class AForExpr
 			var coltype = ittype.supertype_to(v.mmodule, v.anchor, mapit_cla)
 			var variables = self.variables
 			if variables.length != 2 then
-				v.error(self, "Type Error: Expected two variables")
+				v.error(self, "Type Error: 'for' expects two variables when using 'MapIterator'.")
 			else
 				variables[0].declared_type = coltype.arguments[0]
 				variables[1].declared_type = coltype.arguments[1]
@@ -891,33 +889,34 @@ redef class AForExpr
 		end
 
 		if not is_col and not is_map then
-			v.error(self, "Type Error: Expected method 'iterator' to return an Iterator of MapIterator type")
+			v.error(self, "Type Error: 'for' expects method 'iterator' to return an 'Iterator' or 'MapIterator' type'.")
 			return
 		end
 
 		# anchor formal and virtual types
 		if mtype.need_anchor then mtype = v.anchor_to(mtype)
 
+		if mtype isa MNullableType then mtype = mtype.mtype
 		self.coltype = mtype.as(MClassType)
 
 		# get methods is_ok, next, item
 		var ikdef = v.get_method(self, ittype, "is_ok", false)
 		if ikdef == null then
-			v.error(self, "Type Error: Expected method 'is_ok' in Iterator type {ittype}")
+			v.error(self, "Type Error: 'for' expects a method 'is_ok' in 'Iterator' type {ittype}.")
 			return
 		end
 		self.method_is_ok = ikdef.mproperty
 
 		var itemdef = v.get_method(self, ittype, "item", false)
 		if itemdef == null then
-			v.error(self, "Type Error: Expected method 'item' in Iterator type {ittype}")
+			v.error(self, "Type Error: 'for' expects a method 'item' in 'Iterator' type {ittype}.")
 			return
 		end
 		self.method_item = itemdef.mproperty
 
 		var nextdef = v.get_method(self, ittype, "next", false)
 		if nextdef == null then
-			v.error(self, "Type Error: Expected method 'next' in Iterator type {ittype}")
+			v.error(self, "Type Error: 'for' expects a method 'next' in 'Iterator' type {ittype}.")
 			return
 		end
 		self.method_next = nextdef.mproperty
@@ -925,7 +924,7 @@ redef class AForExpr
 		if is_map then
 			var keydef = v.get_method(self, ittype, "key", false)
 			if keydef == null then
-				v.error(self, "Type Error: Expected method 'key' in Iterator type {ittype}")
+				v.error(self, "Type Error: 'for' expects a method 'key' in 'Iterator' type {ittype}.")
 				return
 			end
 			self.method_key = keydef.mproperty
@@ -1013,15 +1012,6 @@ redef class AOrElseExpr
 			#v.error(self, "Type Error: ambiguous type {t1} vs {t2}")
 		end
 		self.mtype = t
-	end
-end
-
-redef class AEeExpr
-	redef fun accept_typing(v)
-	do
-		v.visit_expr(n_expr)
-		v.visit_expr(n_expr2)
-		self.mtype = v.type_bool(self)
 	end
 end
 
@@ -1203,9 +1193,6 @@ end
 ## MESSAGE SENDING AND PROPERTY
 
 redef class ASendExpr
-	# @depreciated: use `callsite`
-	fun mproperty: nullable MMethod do return callsite.mproperty
-
 	# The property invoked by the send.
 	var callsite: nullable CallSite
 
@@ -1242,14 +1229,6 @@ redef class ASendExpr
 			self.mtype = ret
 		else
 			self.is_typed = true
-		end
-
-		if self.n_closure_defs.length == msignature.mclosures.length then
-			for i in [0..self.n_closure_defs.length[ do
-				self.n_closure_defs[i].accept_typing(v, msignature.mclosures[i])
-			end
-		else
-			debug("closure: got {self.n_closure_defs.length}, want {msignature.mclosures.length}")
 		end
 	end
 
@@ -1374,9 +1353,6 @@ redef class ABraAssignExpr
 end
 
 redef class ASendReassignFormExpr
-	# @depreciated use `write_callsite`
-	fun write_mproperty: nullable MMethod do return write_callsite.mproperty
-
 	# The property invoked for the writing
 	var write_callsite: nullable CallSite
 
@@ -1447,7 +1423,7 @@ end
 redef class ASuperExpr
 	# The method to call if the super is in fact a 'super init call'
 	# Note: if the super is a normal call-next-method, then this attribute is null
-	var mproperty: nullable MMethod
+	var callsite: nullable CallSite
 
 	redef fun accept_typing(v)
 	do
@@ -1468,7 +1444,6 @@ redef class ASuperExpr
 		end
 		# FIXME: covariance of return type in linear extension?
 		var superprop = superprops.first
-		assert superprop isa MMethodDef
 
 		var msignature = v.resolve_signature_for(superprop, recvtype, true)
 		var args = self.n_args.to_a
@@ -1483,7 +1458,9 @@ redef class ASuperExpr
 	private fun process_superinit(v: TypeVisitor)
 	do
 		var recvtype = v.nclassdef.mclassdef.bound_mtype
-		var mproperty = v.mpropdef.mproperty
+		var mpropdef = v.mpropdef
+		assert mpropdef isa MMethodDef
+		var mproperty = mpropdef.mproperty
 		var superprop: nullable MMethodDef = null
 		for msupertype in v.nclassdef.mclassdef.supertypes do
 			msupertype = msupertype.anchor_to(v.mmodule, recvtype)
@@ -1512,14 +1489,30 @@ redef class ASuperExpr
 			v.error(self, "Error: No super method to call for {mproperty}.")
 			return
 		end
-		self.mproperty = superprop.mproperty
+
+		var msignature = v.resolve_signature_for(superprop, recvtype, true)
+		var callsite = new CallSite(self, recvtype, true, superprop.mproperty, superprop, msignature, false)
+		self.callsite = callsite
 
 		var args = self.n_args.to_a
-		var msignature = v.resolve_signature_for(superprop, recvtype, true)
 		if args.length > 0 then
-			v.check_signature(self, args, mproperty.name, msignature)
+			callsite.check_signature(v, args)
 		else
-			# TODO: Check signature
+			# Check there is at least enough parameters
+			if mpropdef.msignature.arity < msignature.arity then
+				v.error(self, "Error: Not enough implicit arguments to pass. Got {mpropdef.msignature.arity}, expected at least {msignature.arity}. Signature is {msignature}")
+				return
+			end
+			# Check that each needed parameter is conform
+			var i = 0
+			for sp in msignature.mparameters do
+				var p = mpropdef.msignature.mparameters[i]
+				if not v.is_subtype(p.mtype, sp.mtype) then
+					v.error(self, "Type error: expected argument #{i} of type {sp.mtype}, got implicit argument {p.name} of type {p.mtype}. Signature is {msignature}")
+					return
+				end
+				i += 1
+			end
 		end
 
 		self.is_typed = true
@@ -1529,9 +1522,6 @@ end
 ####
 
 redef class ANewExpr
-	# @depreciated use `callsite`
-	fun mproperty: nullable MMethod do return self.callsite.mproperty
-
 	# The constructor invoked by the new.
 	var callsite: nullable CallSite
 
@@ -1547,6 +1537,14 @@ redef class ANewExpr
 				return
 			else
 				v.error(self, "Type error: cannot instantiate the formal type {recvtype}.")
+				return
+			end
+		else
+			if recvtype.mclass.kind == abstract_kind then
+				v.error(self, "Cannot instantiate abstract class {recvtype}.")
+				return
+			else if recvtype.mclass.kind == interface_kind then
+				v.error(self, "Cannot instantiate interface {recvtype}.")
 				return
 			end
 		end
@@ -1657,50 +1655,6 @@ redef class AIssetAttrExpr
 			v.error(self, "Error: isset on a nullable attribute.")
 		end
 		self.mtype = v.type_bool(self)
-	end
-end
-
-###
-
-redef class AClosureCallExpr
-	redef fun accept_typing(v)
-	do
-		var variable = self.variable
-		if variable == null then return # Skip error
-
-		var recvtype = v.nclassdef.mclassdef.bound_mtype
-		var msignature = variable.declared_type.as(not null)
-		msignature = v.resolve_for(msignature, recvtype, false).as(MSignature)
-
-		var args = n_args.to_a
-		v.check_signature(self, args, variable.name, msignature)
-
-		self.is_typed = true
-		self.mtype = msignature.return_mtype
-	end
-end
-
-redef class AClosureDef
-	var mclosure: nullable MParameter
-
-	private fun accept_typing(v: TypeVisitor, mparameter: MParameter)
-	do
-		var variables = self.variables
-		if variables == null then return
-
-		self.mclosure = mparameter
-		var msignature = mparameter.mtype.as(MSignature)
-
-		if msignature.arity != variables.length then
-			v.error(self, "Type error: closure {mparameter.name} expects {msignature.arity} parameters, {variables.length} given")
-			return
-		end
-
-		for i in [0..variables.length[ do
-			variables[i].declared_type = msignature.mparameters[i].mtype
-		end
-
-		v.visit_stmt(self.n_expr)
 	end
 end
 

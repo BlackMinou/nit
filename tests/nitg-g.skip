@@ -4,3 +4,5 @@ init_linext
 inline
 test_extern
 nitc
+nitg
+test_json
