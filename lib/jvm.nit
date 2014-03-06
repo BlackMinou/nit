@@ -19,7 +19,7 @@
 # See: http://docs.oracle.com/javase/1.5.0/docs/guide/jni/spec/jniTOC.html
 module jvm is
 	c_compiler_option("-I /usr/lib/jvm/default-java/include/")
-	c_linker_option("-L /usr/lib/jvm/default-java/jre/lib/amd64/server -ljvm")
+	c_linker_option("-L /usr/lib/jvm/default-java/jre/lib/*/server -ljvm")
 end
 
 in "C Header" `{
@@ -29,7 +29,7 @@ in "C Header" `{
 
 `{
 	inline jvalue * convert_array_of_Object_to_c(nullable_Array_of_nullable_Object nullable_nit_array, JNIEnv* env){
-		if(!nullable_Array_of_nullable_Object_is_null(nullable_nit_array)){
+		if(nullable_Array_of_nullable_Object_is_null(nullable_nit_array)){
 			return NULL;
 		}
 		Array_of_nullable_Object nit_array = nullable_Array_of_nullable_Object_as_Array_of_nullable_Object(nullable_nit_array);
@@ -59,7 +59,7 @@ in "C Header" `{
 				jstring js = (*env)->NewStringUTF(env, c);
 				c_array[i].l = js;
 			}else {
-				fprintf(stderr, "NOT YET SUPPORTED: nit objects are not supported");
+				fprintf(stderr, "NOT YET SUPPORTED: nit objects are not supported\n");
 				exit(1);
 			}
 		}
@@ -102,9 +102,6 @@ extern class JavaVM `{JavaVM *`}
 	fun destroy_java_vm `{
 		(*recv)->DestroyJavaVM(recv);
 	`}
-
-
-
 end
 
 # Represents a jni JNIEnv, which is a thread in a JavaVM
@@ -154,35 +151,35 @@ extern class JniEnv `{JNIEnv *`}
 	# Call a method on `obj` designed by `method_id` with an array `args` of arguments returning a Bool
 	fun call_boolean_method(obj: JObject, method_id: JMethodID, args: nullable Array[nullable Object]): Bool import Array[nullable Object] as not nullable, Array[nullable Object].[], Array[nullable Object].length, nullable Object.as(Int), nullable Object.as(Char), nullable Object.as(Bool), nullable Object.as(Float), nullable Object.as(JObject), nullable Object.as(String), String.to_cstring `{
 		jvalue * args_tab = convert_array_of_Object_to_c(args, recv);
-		return (*recv)->CallBooleanMethod(recv, obj, method_id, args);
+		return (*recv)->CallBooleanMethod(recv, obj, method_id, args_tab);
 		free(args_tab);
 	`}
 
 	# Call a method on `obj` designed by `method_id` with an array `args` of arguments returning a Char
 	fun call_char_method(obj: JObject, method_id: JMethodID, args: nullable Array[nullable Object]): Char import Array[nullable Object] as not nullable, Array[nullable Object].[], Array[nullable Object].length, nullable Object.as(Int), nullable Object.as(Char), nullable Object.as(Bool), nullable Object.as(Float), nullable Object.as(JObject), nullable Object.as(String), String.to_cstring `{
 		jvalue * args_tab = convert_array_of_Object_to_c(args, recv);
-		return (*recv)->CallCharMethod(recv, obj, method_id, args);
+		return (*recv)->CallCharMethod(recv, obj, method_id, args_tab);
 		free(args_tab);
 	`}
 
 	# Call a method on `obj` designed by `method_id` with an array `args` of arguments returning an Int
 	fun call_int_method(obj: JObject, method_id: JMethodID, args: nullable Array[nullable Object]): Int import Array[nullable Object] as not nullable, Array[nullable Object].[], Array[nullable Object].length, nullable Object.as(Int), nullable Object.as(Char), nullable Object.as(Bool), nullable Object.as(Float), nullable Object.as(JObject), nullable Object.as(String), String.to_cstring `{
 		jvalue * args_tab = convert_array_of_Object_to_c(args, recv);
-		return (*recv)->CallIntMethod(recv, obj, method_id, args);
+		return (*recv)->CallIntMethod(recv, obj, method_id, args_tab);
 		free(args_tab);
 	`}
 	
 	# Call a method on `obj` designed by `method_id` with an array `args` of arguments returning a Float
 	fun call_float_method(obj: JObject, method_id: JMethodID, args: nullable Array[nullable Object]): Float import Array[nullable Object] as not nullable, Array[nullable Object].[], Array[nullable Object].length, nullable Object.as(Int), nullable Object.as(Char), nullable Object.as(Bool), nullable Object.as(Float), nullable Object.as(JObject), nullable Object.as(String), String.to_cstring `{
 		jvalue * args_tab = convert_array_of_Object_to_c(args, recv);
-		return (*recv)->CallFloatMethod(recv, obj, method_id, args);
+		return (*recv)->CallFloatMethod(recv, obj, method_id, args_tab);
 		free(args_tab);
 	`}
 
 	# Call a method on `obj` designed by `method_id` with an array `args` of arguments returning a NativeString
 	fun call_string_method(obj: JObject, method_id: JMethodID, args: nullable Array[nullable Object]): NativeString import Array[nullable Object] as not nullable, Array[nullable Object].[], Array[nullable Object].length, nullable Object.as(Int), nullable Object.as(Char), nullable Object.as(Bool), nullable Object.as(Float), nullable Object.as(JObject), nullable Object.as(String), String.to_cstring, String.length `{
 		jvalue * args_tab = convert_array_of_Object_to_c(args, recv);
-		jobject jobj = (*recv)->CallObjectMethod(recv, obj, method_id, args);
+		jobject jobj = (*recv)->CallObjectMethod(recv, obj, method_id, args_tab);
 		free(args_tab);
 		return (char*)(*recv)->GetStringUTFChars(recv, (jstring)jobj, NULL);
 	`}
@@ -242,12 +239,27 @@ extern class JniEnv `{JNIEnv *`}
 	fun throw_new(clazz: JClass, message: String): Int import String.to_cstring `{
 		return (*recv)->ThrowNew(recv, clazz, String_to_cstring(message));
 	`}
+
+	# return the exception if there is one in the process of being thrown, or NULL if no exception is currently being thrown
+	fun exception_occurred: JObject `{
+		return (*recv)->ExceptionOccurred(recv);
+	`}
+
+	# prints an exception and backtrace to error channel
+	fun exception_describe `{
+		return (*recv)->ExceptionDescribe(recv);
+	`}
+
+	# clears any exception currently being thrown, has no effect if there is no exception
+	fun exception_clear `{
+		return (*recv)->ExceptionClear(recv);
+	`}
 	
 	# Raise a fatal error
 	fun fatal_error(msg: String) import String.to_cstring `{
 		(*recv)->FatalError(recv, String_to_cstring(msg));
 	`}
-	
+
 	# Transform a NIT String into a JObject
 	fun string_to_jobject(string: String): JObject `{
 		return (*recv)->NewStringUTF(recv, String_to_cstring(string));
