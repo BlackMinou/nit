@@ -52,6 +52,10 @@ void *file_NativeFile_NativeFile_file_stat_0(FILE *f){
 	return 0;
 }
 
+void file_NativeFile_NativeFile_fflush(FILE* recv){
+	fflush(stdout);
+}
+
 extern int string_NativeString_NativeString_file_delete_0(char *f){
   return (remove(f) == 0);
 }

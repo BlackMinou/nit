@@ -445,9 +445,16 @@ end
 # Instance of this class are standard FILE * pointers
 private extern NativeFile
 	fun io_read(buf: NativeString, len: Int): Int is extern "file_NativeFile_NativeFile_io_read_2"
-	fun io_write(buf: NativeString, len: Int): Int is extern "file_NativeFile_NativeFile_io_write_2"
+	fun io_write(buf: NativeString, len: Int): Int
+	do
+		var i = native_io_write(buf, len)
+		fflush
+		return i
+	end
+	fun native_io_write(buf: NativeString, len: Int): Int is extern "file_NativeFile_NativeFile_io_write_2"
 	fun io_close: Int is extern "file_NativeFile_NativeFile_io_close_0"
 	fun file_stat: FileStat is extern "file_NativeFile_NativeFile_file_stat_0"
+	fun fflush is extern "file_NativeFile_NativeFile_fflush"
 
 	new io_open_read(path: NativeString) is extern "file_NativeFileCapable_NativeFileCapable_io_open_read_1"
 	new io_open_write(path: NativeString) is extern "file_NativeFileCapable_NativeFileCapable_io_open_write_1"
