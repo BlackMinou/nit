@@ -20,6 +20,11 @@
 # See: http://docs.oracle.com/javase/1.5.0/docs/guide/jni/spec/jniTOC.html
 import jvm
 
+print "Compilation des classes Java ..."
+assert sys.system("javac test_jvm/Queue.java") == 0
+assert sys.system("javac test_jvm/Test2.java") == 0
+assert sys.system("javac test_jvm/TestJvm.java") == 0
+
 print "Initialisation de la JVM ..."
 
 var env_ref = new JniEnvRef
