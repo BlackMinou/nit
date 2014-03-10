@@ -25,6 +25,7 @@ in "C header" `{
 	#include <errno.h>
 	#include <android/log.h>
 	#include <android_native_app_glue.h>
+	#include <android/sensor.h>
 `}
 
 in "C" `{
@@ -396,6 +397,11 @@ redef class App
 
 		return handled
 	end
+
+	private fun extern_input_sensor(event: SensorEvent): Bool
+	do
+		return input(event)
+	end
 	
 	redef fun main_loop is extern import full_frame, generate_input `{
 		LOGI("nitni loop");
@@ -420,11 +426,16 @@ redef class App
 	   /* App_exit(); // this is unreachable anyway*/
 	`}
 
-	redef fun generate_input import save, pause, resume, gained_focus, lost_focus, init_window, term_window, extern_input_key, extern_input_motion `{
+	redef fun generate_input import save, pause, resume, gained_focus, lost_focus, init_window, term_window, extern_input_key, extern_input_motion, extern_input_sensor `{
 		int ident;
 		int events;
 		static int block = 0;
 		struct android_poll_source* source;
+
+		// Prepare to monitor gyroscope
+		ASensorManager sensormanager = AsensorManager_getInstance();
+		ASensor rotation = ASensorManager_getDefaultSensor(sensormanager, 11);
+		ASensorEventQueue eventqueue = ASensorManager_createEventQueue(sensormanager, mnit_java_app->looper,LOOPER_ID_USER, NULL, NULL);
 
 		while ((ident=ALooper_pollAll(0, NULL, &events,
 				(void**)&source)) >= 0) { /* first 0 is for non-blocking */ 
@@ -432,6 +443,16 @@ redef class App
 			// Process this event.
 			if (source != NULL)
 				source->process(mnit_java_app, source);
+			
+			//If a sensor has data, process it
+			if(ident == LOOPER_ID_USER) {
+				if(gyroscope != NULL) {
+					ASensorEvent event;
+					while(ASensorEventQueue_getEvents(eventqueue, &event, 1) > 0) {
+						App_extern_input_sensor(mnit_java_app, event);
+					}
+				}
+			}
 
 			// Check if we are exiting.
 			if (mnit_java_app->destroyRequested != 0) {

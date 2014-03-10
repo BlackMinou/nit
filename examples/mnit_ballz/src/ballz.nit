@@ -14,9 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-module balls
+module ballz
 
-import mnit
+import mnit_android 
 import realtime
 
 class MyApp
@@ -24,10 +24,10 @@ class MyApp
 	
 	var screen: Screen
 	var sensorManager: ASensorManager
-	var gyroSensor: ASensor
+	var rotationsensor: ASensor
 	var sensorEventQueue: ASensorEventQueue
 
-
+	var target_dt = 20000000
 
 	init do super
 
@@ -35,7 +35,7 @@ class MyApp
 	redef fun init_window 
 	do
 		super
-		screen = new Screen(self)
+		screen = new Screen(self, display.as(Display))
 	end
 
 	redef fun frame_core(display)
@@ -49,15 +49,15 @@ class MyApp
 			
 			var dt = clock.lapse
 			if dt.sec == 0 and dt.nanosec < target_dt then
-				var slee_t = target_dt - dt.nanosec
+				var sleep_t = target_dt - dt.nanosec
 				sys.nanosleep(0, sleep_t)
 			end
 		end
 	end
 
 	redef fun input(ie)
-	do
-
+	do	
+		return screen.input(ie)
 	end
 end
 
@@ -79,8 +79,10 @@ class Ball
 	do
 	end
 
-	fun intercepts (event: AsensorEvent): Bool
+	fun intercepts (event: ASensorEvent): Bool
 	do
+		var vector = event.get_vector
+		return true
 
 	end
 
@@ -88,10 +90,11 @@ end
 
 class Screen
 	var ball_img: Image
-	var game: Game = new Game
+	var game: Game
 
-	init(app: App)
+	init(app: App, display: Display)
 	do
+		game = new Game(display)
 		ball_img = app.load_asset("images/ball.png").as(Image)
 		var scale = game.img_dim.to_f / game.img_ori_dim.to_f
 		ball_img.scale = scale
@@ -100,19 +103,32 @@ class Screen
 	fun do_frame(display: Display)
 	do
 		display.clear(0.0, 0.7, 0.0)
-		display.blit(ball_img, game.ball.x, game.ball.y))
+		display.blit(ball_img, game.ball.x, game.ball.y)
+	end
+
+	fun input(ie: InputEvent): Bool
+	do
+		if ie isa ASensorEvent then
+			game.ball.intercepts(ie)
+			return true
+		end
+		return false
 	end
 end
 
 class Game
 	var ball: Ball
-	
+	var width: Int
+	var height: Int
+
 	var img_ori_dim: Int = 256
 	fun img_dim: Int do return 210
 
-	init
+	init(display: Display)
 	do
-		ball = new Ball
+		width = display.width
+		height = display.height
+		ball = new Ball(self, width/2, height/2)
 	end
 
 	fun do_turn

@@ -16,6 +16,7 @@
 
 module android_sensor
 
+import mnit
 
 in "C header" `{
 	#include <jni.h>
@@ -40,17 +41,17 @@ extern ASensorType `{int`}
 end
 
 extern class ASensorManager `{ASensorManager*`}
-	new get_instance(): AsensorManager `{
+	new get_instance: ASensorManager `{
 		return ASensorManager_getInstance();
 	`}
 
-	private fun get_sensor_list(): Array[ASensor] `{
+	private fun get_sensor_list: Array[ASensor] `{
 		ASensorList *list;
 		ASensorManager_getSensorList(recv, list);
 		return list;
 	`}
 
-	private fun create_event_qeue(android_app: NdkAndoidApp): ASensorEventQueue `{
+	private fun create_event_qeue(android_app: NdkAndroidApp): ASensorEventQueue `{
 		return ASensorManager_CreateEventQueue(recv, android_app->looper, LOOPER_ID_USER, NULL, NULL);
 	`}
 
@@ -83,11 +84,12 @@ extern class ASensor `{ASensorRef`}
 end
 
 extern class ASensorEvent `{ASensorEvent`}
+		super SensorEvent
 	fun get_version: Int `{
 		return recv.version;
 	`}
 
-	fun get_sensor: ASensor ̀`{
+	fun get_sensor: ASensor `{
 		return recv.sensor;
 	`}
 
@@ -183,7 +185,7 @@ extern class ASensorEventQueue `{ASensorEventQueue*`}
 		return ASensorEventQueue_hasEvents(recv)
 	`}
 
-	private fun get_events(events: ASensorEvents, count): Int `{
+	private fun get_events(events: ASensorEvents, count: Int): Int `{
 		return ASensorEventQueue_getEvents(recv, events, (size_t)count);
 	`}
 end
