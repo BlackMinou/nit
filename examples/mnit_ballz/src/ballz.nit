@@ -23,9 +23,6 @@ class MyApp
 	super App
 	
 	var screen: Screen
-	var sensorManager: ASensorManager
-	var rotationsensor: ASensor
-	var sensorEventQueue: ASensorEventQueue
 
 	var target_dt = 20000000
 
@@ -35,6 +32,7 @@ class MyApp
 	redef fun init_window 
 	do
 		super
+		print display == null
 		screen = new Screen(self, display.as(Display))
 	end
 
@@ -81,11 +79,20 @@ class Ball
 
 	fun intercepts (event: ASensorEvent): Bool
 	do
-		var vector = event.get_vector
+		var vector = event.get_acceleration
+		if vector.get_x.to_i > 0 then
+			self.x += 1
+		else
+			self.x -= 1
+		end
+		if vector.get_y.to_i > 0 then
+			self.y -= 1
+		else
+			self.y += 1
+		end
 		return true
 
 	end
-
 end
 
 class Screen
@@ -136,3 +143,6 @@ class Game
 	ball.do_turn
 	end
 end
+
+var app = new MyApp
+app.main_loop

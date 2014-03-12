@@ -20,7 +20,7 @@ import mnit
 
 in "C header" `{
 	#include <jni.h>
-	#include <sensor.h>
+	#include <android/sensor.h>
 `}
 
 in "C" `{
@@ -83,7 +83,7 @@ extern class ASensor `{ASensorRef`}
 	`}
 end
 
-extern class ASensorEvent `{ASensorEvent`}
+extern class ASensorEvent `{ASensorEvent*`}
 		super SensorEvent
 	fun get_version: Int `{
 		return recv.version;
@@ -118,33 +118,33 @@ extern class ASensorEvent `{ASensorEvent`}
 	`}
 
 	fun get_vector: ASensorVector `{
-		return recv.vector;
+		return recv->vector;
 	`}
 
 	fun get_acceleration: ASensorVector `{
-		return recv.acceleration; 
+		return &(recv->acceleration); 
 	`}
 
 	fun get_magnetic: ASensorVector `{
-		return recv.magnetic;
+		return recv->magnetic;
 	`}
 end
 
-extern class ASensorVector `{ASensorVector`}
+extern class ASensorVector `{ASensorVector*`}
 	fun get_v: Array[Float] `{
-		return recv.x;
+		return recv.v;
 	`}
 
 	fun get_x: Float `{
-		return recv.y;
+		return recv->x;
 	`}
 
 	fun get_y: Float `{
-		return recv.y;
+		return recv->y;
 	`}
 
 	fun get_z: Float `{
-		return recv.z;
+		return recv->z;
 	`}
 
 	fun get_azimuth: Float `{
