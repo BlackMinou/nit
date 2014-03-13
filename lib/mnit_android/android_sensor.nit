@@ -118,7 +118,7 @@ extern class ASensorEvent `{ASensorEvent*`}
 	`}
 
 	fun get_vector: ASensorVector `{
-		return recv->vector;
+		return &(recv->vector);
 	`}
 
 	fun get_acceleration: ASensorVector `{
@@ -126,7 +126,68 @@ extern class ASensorEvent `{ASensorEvent*`}
 	`}
 
 	fun get_magnetic: ASensorVector `{
-		return recv->magnetic;
+		return &(recv->magnetic);
+	`}
+end
+
+extern class ASensorAccelerometer `{ASensorEvent*`}
+	super SensorEvent
+	fun x: Float `{
+		return recv->acceleration.x;
+	`}
+
+	fun y: Float `{
+		return recv->acceleration.y;
+	`}
+
+	fun z: Float `{
+		return recv->acceleration.z;
+	`}
+
+end
+
+extern class ASensorMagneticField `{ASensorEvent*`}
+	super SensorEvent
+	fun x: Float `{
+		return recv->magnetic.x;
+	`}
+
+	fun y: Float `{
+		return recv->magnetic.y;
+	`}
+
+	fun z: Float `{
+		return recv->magnetic.z;
+	`}
+end
+
+extern class ASensorGyroscope `{ASensorEvent*`}
+	super SensorEvent
+	fun x: Float `{
+		return recv->vector.x;
+	`}
+
+	fun y: Float `{
+		return recv->vector.y;
+	`}
+
+	fun z: Float `{
+		return recv->vector.y;
+	`}
+end
+
+
+extern class ASensorLight `{ASensorEvent*`}
+	super SensorEvent
+	fun light: Float `{
+		return recv->light;
+	`}
+end
+
+extern class ASensorProximity `{ASensorEvent*`}
+	super SensorEvent
+	fun distance: Float `{
+		return recv->distance;
 	`}
 end
 
@@ -135,35 +196,35 @@ extern class ASensorVector `{ASensorVector*`}
 		return recv.v;
 	`}
 
-	fun get_x: Float `{
+	fun x: Float `{
 		return recv->x;
 	`}
 
-	fun get_y: Float `{
+	fun y: Float `{
 		return recv->y;
 	`}
 
-	fun get_z: Float `{
+	fun z: Float `{
 		return recv->z;
 	`}
 
-	fun get_azimuth: Float `{
+	fun azimuth: Float `{
 		return recv.azimuth;
 	`}
 
-	fun get_pitch: Float `{
+	fun pitch: Float `{
 		return recv.pitch;
 	`}
 
-	fun get_roll: Float `{
+	fun roll: Float `{
 		return recv.roll;
 	`}
 
-	fun get_status: Int `{
+	fun status: Int `{
 		return recv.status;
 	`}
 	
-	fun get_reserved: Array[Int] `{
+	fun reserved: Array[Int] `{
 		return recv.reserved;
 	`}
 end
