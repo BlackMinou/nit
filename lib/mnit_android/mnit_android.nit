@@ -20,4 +20,3 @@ module mnit_android
 import android_app
 import android_opengles1
 import android_assets
-import android_sensor

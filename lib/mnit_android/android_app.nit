@@ -19,6 +19,7 @@ module android_app
 
 import android_opengles1
 import android
+import android_sensor
 
 in "C header" `{
 	#include <jni.h>
@@ -42,6 +43,11 @@ in "C" `{
 		#define LOGI(...) (void)0
 	#endif
 
+	ASensorManager* sensormanager;
+	ASensor const* accelerometer;
+	ASensorEventQueue* eventqueue;
+
+	
 	extern EGLDisplay mnit_display;
 	extern EGLSurface mnit_surface;
 	extern EGLContext mnit_context;
@@ -398,7 +404,7 @@ redef class App
 		return handled
 	end
 
-	private fun extern_input_sensor(event: SensorEvent): Bool
+	private fun extern_input_sensor(event: ASensorEvent): Bool
 	do
 		return input(event)
 	end
@@ -412,9 +418,15 @@ redef class App
 		mnit_java_app->onAppCmd = mnit_handle_cmd;
 		mnit_java_app->onInputEvent = mnit_handle_input;
 		
-		while (1) {
-			App_generate_input(recv);
+		sensormanager = ASensorManager_getInstance();
+		accelerometer = ASensorManager_getDefaultSensor(sensormanager, ASENSOR_TYPE_ACCELEROMETER);
+		eventqueue = ASensorManager_createEventQueue(sensormanager, mnit_java_app->looper,LOOPER_ID_USER, NULL, NULL);
+		ASensorEventQueue_enableSensor(eventqueue, accelerometer);
+		ASensorEventQueue_setEventRate(eventqueue, accelerometer, 5000);
 
+		while (1) {			
+			App_generate_input(recv);
+			LOGW("process mnit_frame");
 			if (mnit_java_app->destroyRequested != 0) return;
 			
 			if (mnit_animating == 1) {
@@ -433,10 +445,11 @@ redef class App
 		struct android_poll_source* source;
 
 		// Prepare to monitor gyroscope
-	/*	ASensorManager sensormanager = AsensorManager_getInstance();
-		ASensor accelerometer = ASensorManager_getDefaultSensor(sensormanager, ASENSOR_TYPE_ACCELEROMETER);
+		/*ASensorManager* sensormanager = ASensorManager_getInstance();
+		ASensor const* accelerometer = ASensorManager_getDefaultSensor(sensormanager, ASENSOR_TYPE_ACCELEROMETER);
 		ASensorEventQueue* eventqueue = ASensorManager_createEventQueue(sensormanager, mnit_java_app->looper,LOOPER_ID_USER, NULL, NULL);
-		ASensorEventQueue_enableSensor(eventqueue, accelerometer);*/
+		ASensorEventQueue_enableSensor(eventqueue, accelerometer);
+		ASensorEventQueue_setEventRate(eventqueue, accelerometer, 100000);*/
 
 		while ((ident=ALooper_pollAll(0, NULL, &events,
 				(void**)&source)) >= 0) { /* first 0 is for non-blocking */ 
@@ -446,14 +459,15 @@ redef class App
 				source->process(mnit_java_app, source);
 			
 			//If a sensor has data, process it
-			/*if(ident == LOOPER_ID_USER) {
-				if(gyroscope != NULL) {
+			if(ident == LOOPER_ID_USER) {
+				if(accelerometer != NULL) {
 					ASensorEvent event;
+					//ASensorEventQueue_getEvents(eventqueue, &event, 1);
 					while(ASensorEventQueue_getEvents(eventqueue, &event, 1) > 0) {
-						App_extern_input_sensor(mnit_java_app, event);
-					}
+						App_extern_input_sensor(nit_app, &event);
+					}	
 				}
-			}*/
+			}
 
 			// Check if we are exiting.
 			if (mnit_java_app->destroyRequested != 0) {

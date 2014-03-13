@@ -22,7 +22,7 @@ import realtime
 class MyApp
 	super App
 	
-	var screen: Screen
+	var screen: nullable Screen
 
 	var target_dt = 20000000
 
@@ -32,7 +32,6 @@ class MyApp
 	redef fun init_window 
 	do
 		super
-		print display == null
 		screen = new Screen(self, display.as(Display))
 	end
 
@@ -55,7 +54,10 @@ class MyApp
 
 	redef fun input(ie)
 	do	
-		return screen.input(ie)
+		if screen != null then
+			return screen.input(ie)
+		end
+		return false
 	end
 end
 
@@ -81,15 +83,16 @@ class Ball
 	do
 		var vector = event.get_acceleration
 		if vector.get_x.to_i > 0 then
-			self.x += 1
-		else
 			self.x -= 1
+		else
+			self.x += 1
 		end
 		if vector.get_y.to_i > 0 then
-			self.y -= 1
-		else
 			self.y += 1
+		else
+			self.y -= 1
 		end
+		print self.x.to_s + ":" + self.y.to_s
 		return true
 
 	end
