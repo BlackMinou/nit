@@ -16,9 +16,9 @@
 
 module ballz
 
-import mnit_android 
 import realtime
-
+import mnit_android
+import game_logic
 class MyApp
 	super App
 	
@@ -33,6 +33,7 @@ class MyApp
 	do
 		super
 		screen = new Screen(self, display.as(Display))
+		
 	end
 
 	redef fun frame_core(display)
@@ -54,96 +55,14 @@ class MyApp
 
 	redef fun input(ie)
 	do	
+		if ie isa QuitEvent then 
+			quit = true
+			return true
+		end
 		if screen != null then
 			return screen.input(ie)
 		end
 		return false
-	end
-end
-
-class Ball
-	var x: Int
-	var y: Int
-	
-	var game: Game
-	
-	init(game: Game, x,y: Int)
-	do
-		self.x = x
-		self.y = y
-		self.game = game
-	end
-
-	# not very useful at this time
-	fun do_turn
-	do
-	end
-
-	fun intercepts (event: ASensorEvent): Bool
-	do
-		var vector = event.get_acceleration
-		if vector.get_x.to_i > 0 then
-			self.x -= 1
-		else
-			self.x += 1
-		end
-		if vector.get_y.to_i > 0 then
-			self.y += 1
-		else
-			self.y -= 1
-		end
-		print self.x.to_s + ":" + self.y.to_s
-		return true
-
-	end
-end
-
-class Screen
-	var ball_img: Image
-	var game: Game
-
-	init(app: App, display: Display)
-	do
-		game = new Game(display)
-		ball_img = app.load_asset("images/ball.png").as(Image)
-		var scale = game.img_dim.to_f / game.img_ori_dim.to_f
-		ball_img.scale = scale
-	end
-
-	fun do_frame(display: Display)
-	do
-		display.clear(0.0, 0.7, 0.0)
-		display.blit(ball_img, game.ball.x, game.ball.y)
-	end
-
-	fun input(ie: InputEvent): Bool
-	do
-		if ie isa ASensorEvent then
-			game.ball.intercepts(ie)
-			return true
-		end
-		return false
-	end
-end
-
-class Game
-	var ball: Ball
-	var width: Int
-	var height: Int
-
-	var img_ori_dim: Int = 256
-	fun img_dim: Int do return 210
-
-	init(display: Display)
-	do
-		width = display.width
-		height = display.height
-		ball = new Ball(self, width/2, height/2)
-	end
-
-	fun do_turn
-	do
-	ball.do_turn
 	end
 end
 
