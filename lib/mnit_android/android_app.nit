@@ -47,7 +47,6 @@ in "C" `{
 	ASensor const* accelerometer;
 	ASensorEventQueue* eventqueue;
 
-	
 	extern EGLDisplay mnit_display;
 	extern EGLSurface mnit_surface;
 	extern EGLContext mnit_context;
@@ -328,8 +327,13 @@ class AndroidPointerEvent
 		return AMotionEvent_getPressure(motion_event, pointer_id);
 	`}
 
-	redef fun pressed do return true
-	redef fun depressed do return false
+	redef fun pressed
+	do
+		var action = motion_event.inner_event.action
+		return action.is_down or action.is_move
+	end
+
+	redef fun depressed do return not pressed
 end
 
 extern AndroidKeyEvent in "C" `{AInputEvent *`}
@@ -424,7 +428,7 @@ redef class App
 		ASensorEventQueue_enableSensor(eventqueue, accelerometer);
 		ASensorEventQueue_setEventRate(eventqueue, accelerometer, 5000);
 
-		while (1) {			
+		while (1) {
 			App_generate_input(recv);
 			LOGW("process mnit_frame");
 			if (mnit_java_app->destroyRequested != 0) return;
@@ -443,13 +447,6 @@ redef class App
 		int events;
 		static int block = 0;
 		struct android_poll_source* source;
-
-		// Prepare to monitor gyroscope
-		/*ASensorManager* sensormanager = ASensorManager_getInstance();
-		ASensor const* accelerometer = ASensorManager_getDefaultSensor(sensormanager, ASENSOR_TYPE_ACCELEROMETER);
-		ASensorEventQueue* eventqueue = ASensorManager_createEventQueue(sensormanager, mnit_java_app->looper,LOOPER_ID_USER, NULL, NULL);
-		ASensorEventQueue_enableSensor(eventqueue, accelerometer);
-		ASensorEventQueue_setEventRate(eventqueue, accelerometer, 100000);*/
 
 		while ((ident=ALooper_pollAll(0, NULL, &events,
 				(void**)&source)) >= 0) { /* first 0 is for non-blocking */ 
