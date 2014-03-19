@@ -43,10 +43,15 @@ in "C" `{
 		#define LOGI(...) (void)0
 	#endif
 
+	//Need to move to a better place
 	ASensorManager* sensormanager;
 	ASensor const* accelerometer;
+	ASensor const* magnetic_field;
+	ASensor const* gyroscope;
+	ASensor const* light;
+	ASensor const* proximity;
 	ASensorEventQueue* eventqueue;
-
+	
 	extern EGLDisplay mnit_display;
 	extern EGLSurface mnit_surface;
 	extern EGLContext mnit_context;
@@ -327,13 +332,8 @@ class AndroidPointerEvent
 		return AMotionEvent_getPressure(motion_event, pointer_id);
 	`}
 
-	redef fun pressed
-	do
-		var action = motion_event.inner_event.action
-		return action.is_down or action.is_move
-	end
-
-	redef fun depressed do return not pressed
+	redef fun pressed do return true
+	redef fun depressed do return false
 end
 
 extern AndroidKeyEvent in "C" `{AInputEvent *`}
@@ -408,12 +408,79 @@ redef class App
 		return handled
 	end
 
-	private fun extern_input_sensor(event: ASensorEvent): Bool
-	do
-		return input(event)
-	end
+	#Sensors support
+	fun enable_sensors_support `{
+		sensormanager = ASensorManager_getInstance();
+		eventqueue = ASensorManager_createEventQueue(sensormanager, mnit_java_app->looper,LOOPER_ID_USER, NULL, NULL);
+	`}
+
+	fun enable_accelerometer `{
+		accelerometer = ASensorManager_getDefaultSensor(sensormanager, ASENSOR_TYPE_ACCELEROMETER);
+		if(accelerometer== NULL){
+			LOGW("Accelerometer Sensor unavailable on this device");
+			return;
+		}
+		if (ASensorEventQueue_enableSensor(eventqueue, accelerometer) < 0){
+			LOGW("Accelerometer sensor unavailable");
+		}
+		ASensorEventQueue_setEventRate(eventqueue, accelerometer, 5000);
+	`}
+
+	fun enable_magnetic_field `{
+		magnetic_field = ASensorManager_getDefaultSensor(sensormanager, ASENSOR_TYPE_MAGNETIC_FIELD);
+		if (magnetic_field == NULL){
+			LOGW("Magnetic Field Sensor not available on this device");
+			return;
+		}
+		if(ASensorEventQueue_enableSensor(eventqueue, magnetic_field) < 0){
+			LOGW("magnetic field sensor unavailable");
+		}
+		ASensorEventQueue_setEventRate(eventqueue, magnetic_field, 10000);
+	`}
+
+	fun enable_gyroscope `{
+		gyroscope = ASensorManager_getDefaultSensor(sensormanager, ASENSOR_TYPE_GYROSCOPE);
+		if(gyroscope == NULL){
+			LOGW("Gyroscope Sensor not available on this device");
+			return;
+		}
+		if(ASensorEventQueue_enableSensor(eventqueue, gyroscope) < 0){
+			LOGW("gyroscope sensor unavailable");
+		}
+		ASensorEventQueue_setEventRate(eventqueue, gyroscope, 10000);
+	`}
+
+	fun enable_light `{
+		light = ASensorManager_getDefaultSensor(sensormanager, ASENSOR_TYPE_LIGHT);
+		if(light == NULL){
+			LOGW("Light Sensor not available on this device");
+			return;
+		}
+		if(ASensorEventQueue_enableSensor(eventqueue, light) < 0){
+			LOGW("light sensor unavailable");	
+		}
+		ASensorEventQueue_setEventRate(eventqueue, light, 10000);
+	`}
+
+	fun enable_proximity `{
+		proximity = ASensorManager_getDefaultSensor(sensormanager, ASENSOR_TYPE_PROXIMITY);
+		if(proximity == NULL){
+			LOGW("Proximity Sensor not available on this device");
+			return;
+		}
+		if(ASensorEventQueue_enableSensor(eventqueue, proximity) < 0){
+			LOGW("proximity sensor unavailable");
+		}
+		ASensorEventQueue_setEventRate(eventqueue, proximity, 10000);
+	`}
+
+	private fun extern_input_sensor_accelerometer(event: ASensorAccelerometer) do  input(event)
+	private fun extern_input_sensor_magnetic_field(event: ASensorMagneticField) do input(event)
+	private fun extern_input_sensor_gyroscope(event: ASensorGyroscope) do input(event)
+	private fun extern_input_sensor_light(event: ASensorLight) do input(event)
+	private fun extern_input_sensor_proximity(event: ASensorProximity) do input(event)
 	
-	redef fun main_loop is extern import full_frame, generate_input `{
+	redef fun main_loop is extern import full_frame, generate_input, enable_sensors_support, enable_accelerometer, enable_magnetic_field, enable_gyroscope, enable_light, enable_proximity `{
 		LOGI("nitni loop");
 		
 		nit_app = recv;
@@ -421,16 +488,18 @@ redef class App
 		mnit_java_app->userData = &nit_app;
 		mnit_java_app->onAppCmd = mnit_handle_cmd;
 		mnit_java_app->onInputEvent = mnit_handle_input;
-		
-		sensormanager = ASensorManager_getInstance();
-		accelerometer = ASensorManager_getDefaultSensor(sensormanager, ASENSOR_TYPE_ACCELEROMETER);
-		eventqueue = ASensorManager_createEventQueue(sensormanager, mnit_java_app->looper,LOOPER_ID_USER, NULL, NULL);
-		ASensorEventQueue_enableSensor(eventqueue, accelerometer);
-		ASensorEventQueue_setEventRate(eventqueue, accelerometer, 5000);
 
+		App_enable_sensors_support(nit_app);
+		App_enable_accelerometer(nit_app);
+		App_enable_magnetic_field(nit_app);
+		App_enable_gyroscope(nit_app);
+		App_enable_light(nit_app);
+		App_enable_proximity(nit_app);
+		
 		while (1) {
 			App_generate_input(recv);
-			LOGW("process mnit_frame");
+			//LOGW("process mnit_frame");
+			
 			if (mnit_java_app->destroyRequested != 0) return;
 			
 			if (mnit_animating == 1) {
@@ -442,7 +511,7 @@ redef class App
 	   /* App_exit(); // this is unreachable anyway*/
 	`}
 
-	redef fun generate_input import save, pause, resume, gained_focus, lost_focus, init_window, term_window, extern_input_key, extern_input_motion, extern_input_sensor `{
+	redef fun generate_input import save, pause, resume, gained_focus, lost_focus, init_window, term_window, extern_input_key, extern_input_motion, extern_input_sensor_accelerometer, extern_input_sensor_magnetic_field, extern_input_sensor_gyroscope, extern_input_sensor_light, extern_input_sensor_proximity `{
 		int ident;
 		int events;
 		static int block = 0;
@@ -457,13 +526,32 @@ redef class App
 			
 			//If a sensor has data, process it
 			if(ident == LOOPER_ID_USER) {
-				if(accelerometer != NULL) {
-					ASensorEvent event;
-					//ASensorEventQueue_getEvents(eventqueue, &event, 1);
-					while(ASensorEventQueue_getEvents(eventqueue, &event, 1) > 0) {
-						App_extern_input_sensor(nit_app, &event);
-					}	
-				}
+				//maybe add a boolean to the app to know if we want to use Sensor API or ASensorEvent directly ...
+				ASensorEvent* events = malloc(sizeof(ASensorEvent)*10);
+				int nbevents;
+				while((nbevents = ASensorEventQueue_getEvents(eventqueue, events, 10)) > 0) {
+					int i;
+					for(i = 0; i < nbevents; i++){
+						ASensorEvent event = events[i];
+						switch (event.type) {
+							case ASENSOR_TYPE_ACCELEROMETER:
+								App_extern_input_sensor_accelerometer(nit_app, &event);
+								break;
+							case ASENSOR_TYPE_MAGNETIC_FIELD:
+								App_extern_input_sensor_magnetic_field(nit_app, &event);
+								break;
+							case ASENSOR_TYPE_GYROSCOPE:
+								App_extern_input_sensor_gyroscope(nit_app, &event);
+								break;
+							case ASENSOR_TYPE_LIGHT:
+								App_extern_input_sensor_light(nit_app, &event);
+								break;
+							case ASENSOR_TYPE_PROXIMITY:
+								App_extern_input_sensor_proximity(nit_app, &event);
+								break;
+						}
+					}
+				}	
 			}
 
 			// Check if we are exiting.
