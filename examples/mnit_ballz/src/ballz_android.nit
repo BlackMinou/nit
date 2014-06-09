@@ -43,6 +43,8 @@ redef class App
 	do
 		super
 		screen = new Screen(self, display.as(Display))
+		var manager = get_audio_manager
+		manager.manage_audio_mode
 	end
 
 	redef fun frame_core(display)
