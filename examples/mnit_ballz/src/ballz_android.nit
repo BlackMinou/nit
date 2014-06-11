@@ -19,6 +19,7 @@ module ballz_android
 import realtime
 import mnit_android
 import game_logic
+import mnit_android::android_assetsm
 
 redef class App
 
@@ -39,11 +40,11 @@ redef class App
 		super
 	end
 
-	redef fun window_created
+	redef fun init_window
 	do
 		super
 		screen = new Screen(self, display.as(Display))
-		var manager = get_audio_manager
+		var manager = audio_manager
 		manager.manage_audio_mode
 	end
 
@@ -66,7 +67,7 @@ redef class App
 
 	redef fun input(ie)
 	do	
-		if ie isa QuitEvent then 
+		if ie isa QuitEvent or (ie isa AndroidKeyEvent and  ie.key_char == "q") then 
 			quit = true
 			return true
 		end

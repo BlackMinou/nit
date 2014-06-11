@@ -67,6 +67,7 @@ class Ball
 			#print "ASensorProximity : distance = " + event.distance.to_s
 		else if event isa MotionEvent then
 			activate_walls(event)
+			play_aom_sounds(event)
 		end
 		return true
 	end
@@ -119,7 +120,7 @@ class Ball
 		
 		if wall_to_del != null then 
 			game.walls.remove(wall_to_del)
-			game.walldestroy.play(game.walld_id)
+			game.sound_pool.play(game.walld_id_sound)
 		end
 
 		# values of the screen bordure counting the ball radius
@@ -152,10 +153,10 @@ class Ball
 	fun do_bounce(wall_position: Int)
 	do
 		if wall_position == 1 then
-			if offset_x.abs > 3.0 then game.bounce.play(game.bounce_id)
+			if offset_x.abs > 3.0 then game.sound_pool.play(game.bounce_id_sound)
 			offset_x = -offset_x*0.85
 		else if wall_position == 2 then
-			if offset_y.abs > 3.0 then game.bounce.play(game.bounce_id)
+			if offset_y.abs > 3.0 then game.sound_pool.play(game.bounce_id_sound)
 			offset_y = -offset_y*0.85
 		end
 		if offset_x.abs > 3.0 and offset_y.abs > 3.0 then
@@ -168,6 +169,18 @@ class Ball
 	do
 		if event.just_went_down then
 			walls_activated = not walls_activated
+		end
+	end
+
+	fun play_aom_sounds(event: MotionEvent) do
+		if event isa AndroidMotionEvent then
+			var e = event.pointers.first
+			if e != null then
+				if e.x < game.width/2.0 and e.y < game.height/2.0 then game.aom_sounds.play(game.oh_sound)
+				if e.x < game.width/2.0 and e.y > game.height/2.0 then game.aom_sounds.play(game.aw_sound)
+				if e.x > game.width/2.0 and e.y < game.height/2.0 then game.aom_sounds.play(game.cry_sound)
+				if e.x > game.width/2.0 and e.y > game.height/2.0 then game.aom_sounds.play(game.throw_sound)
+			end
 		end
 	end
 end
@@ -271,13 +284,15 @@ class Game
 	var width: Float
 	var height: Float
 	var config = new Configuration
-	var walldestroy: SoundPool
-	var walld_id: Int
-	var begining: SoundPool
-	var beg_id: Int
-	var bounce: SoundPool
-	var bounce_id: Int
-
+	var sound_pool: SoundPool
+	var aom_sounds: SoundPool
+	var music: MediaPlayer
+	var walld_id_sound: Int
+	var bounce_id_sound: Int
+	var oh_sound: Int
+	var aw_sound: Int
+	var cry_sound: Int
+	var throw_sound: Int
 	var img_ori_dim: Int = 256
 	fun img_dim: Int do return 210
 
@@ -298,13 +313,21 @@ class Game
 			lines.add(wall.lbc)
 			lines.add(wall.lda)
 		end
-		walldestroy = new SoundPool
-		begining = new SoundPool
-		bounce = new SoundPool
-		walld_id = walldestroy.load_id(app.native_activity, app.resource_manager.raw_id("walld"))
-		beg_id  = begining.load_id(app.native_activity, app.resource_manager.raw_id("begining"))
-		bounce_id = bounce.load_id(app.native_activity, app.resource_manager.raw_id("bounce"))
-		#begining.play(beg_id, 1.0, 1.0, 0, 0, 1.0)
+		# walls destroying and bouncing sounds
+		sound_pool = new SoundPool
+		walld_id_sound = sound_pool.load_id(app.native_activity, app.resource_manager.raw_id("walld"))
+		bounce_id_sound = sound_pool.load_id(app.native_activity, app.resource_manager.raw_id("bounce"))
+	
+		# aom sounds
+		aom_sounds = new SoundPool
+		oh_sound = aom_sounds.load_id(app.native_activity, app.resource_manager.raw_id("oh"))
+		aw_sound = aom_sounds.load_id(app.native_activity, app.resource_manager.raw_id("aw"))
+		cry_sound = aom_sounds.load_id(app.native_activity, app.resource_manager.raw_id("cry"))
+		throw_sound = aom_sounds.load_id(app.native_activity, app.resource_manager.raw_id("thr"))
+		
+		music = new MediaPlayer.id(app.native_activity, app.resource_manager.raw_id("music"))
+		music.looping = true
+		music.start
 	end
 
 	fun do_turn
