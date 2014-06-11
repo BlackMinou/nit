@@ -133,4 +133,9 @@ extern class NativeFileDescriptor in "Java" `{ java.io.FileDescriptor `}
 end
 
 extern class NativeInputStream in "Java" `{ java.io.InputStream `}
+	super JavaObject
+	redef type SELF: NativeInputStream
+	fun available: Int in "Java" `{ return recv.available(); `}
+	fun close in "Java" `{ recv.close `}
+	#TODO : implement all methods ? 
 end

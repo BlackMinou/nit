@@ -10,16 +10,13 @@ in "Java" `{
 	import android.content.res.Resources;
 	import android.content.res.XmlResourceParser;
 	import java.io.IOException;
+	import android.graphics.Bitmap;
+	import android.graphics.BitmapFactory;
 `}
 
 extern class NativeAssetManager in "Java" `{ android.content.res.AssetManager `}
 	super JavaObject
 	redef type SELF: NativeAssetManager
-
-	fun acess_buffer_mode: Int in "Java" `{ return recv.ACCESS_BUFFER; `}
-	fun access_random_mode: Int in "Java" `{ return recv.ACCESS_RANDOM; `}
-	fun acess_streaming_mode: Int in "Java" `{ return recv.ACCESS_STREAMING; `}
-	fun acess_unknown_mode: Int in "Java" `{ return recv.ACCESS_UNKNOWN; `}
 
 	fun close in "Java" `{ recv.close(); `}
 	fun get_locales: Array[JavaString] import Array[JavaString], Array[JavaString].add in "Java" `{
@@ -29,10 +26,10 @@ extern class NativeAssetManager in "Java" `{ android.content.res.AssetManager `}
 		}
 		return arr;
 	`}
-	fun list(path: String): Array[JavaString] import Array[JavaString], Array[JavaString].add, String.to_java_string in "Java" `{
+	fun list(path: JavaString): Array[JavaString] import Array[JavaString], Array[JavaString].add  in "Java" `{
 		int arr = new_Array_of_JavaString();
 		try {
-			for (String s : recv.list(String_to_java_string(path))) {
+			for (String s : recv.list(path)) {
 				Array_of_JavaString_add(arr, s);
 			}
 		}catch (IOException io) {
@@ -45,13 +42,6 @@ extern class NativeAssetManager in "Java" `{ android.content.res.AssetManager `}
 		try {
 			return recv.open(file_name); 
 		}catch (IOException io) {
-			return null;
-		}
-	`}
-	fun open_with(file_name: String, access_mode: Int): NativeInputStream import String.to_java_string in "Java" `{ 
-		try {
-			return recv.open(String_to_java_string(file_name), access_mode); 
-		}catch(IOException io){
 			return null;
 		}
 	`}
@@ -70,27 +60,46 @@ extern class NativeAssetManager in "Java" `{ android.content.res.AssetManager `}
 			return null;
 		}
 	`}
-	fun open_non_asset_fd_cookie(cookie: Int, file_name: String): NativeAssetFileDescriptor import String.to_java_string in "Java" `{ 
-		try {
-			return recv.openNonAssetFd(cookie, String_to_java_string(file_name)); 
-		}catch(IOException io){
-			return null;
-		}
-	`}
-	fun open_xml_resource_parser(file_name: String): XmlResourceParser import String.to_java_string in "Java" `{ 
-		try {
-			return recv.openXmlResourceParser(String_to_java_string(file_name));
-		}catch(IOException io){
-			return null;
-		}
-	`}
-	fun open_xml_resource_parser_cookie(cookie: Int, file_name: String): XmlResourceParser import String.to_java_string in "Java" `{ 
-		try {
-			return recv.openXmlResourceParser(cookie, String_to_java_string(file_name));
-		}catch(IOException io){
-			return null;
-		}
-	`}	
+end
+
+class AssetManager
+	var native_assets_manager: NativeAssetManager
+
+	fun get_locales: Array[String] do
+		var java_array = native_assets_manager.get_locales
+		var nit_array = new Array[String]
+		for s in java_array do
+			nit_array.add(s.to_s)
+		end
+		return nit_array
+	end
+
+	fun list(path: String): Array[String] do
+		var java_array = native_assets_manager.list(path.to_java_string)
+		var nit_array = new Array[String]
+		for s in java_array do
+			nit_array.add(s.to_s)
+		end
+		return nit_array
+	end
+
+	fun open(file_name: String): NativeInputStream do
+		return native_assets_manager.open(file_name.to_java_string)
+	end
+
+	fun bitman(name: String): NativeBitmap do
+		return new NativeBitmap.from_stream(native_assets_manager.open(name.to_java_string))
+	end
+
+end
+
+extern class NativeBitmap in "Java" `{ android.graphics.Bitmap `}
+	super JavaObject
+	redef type SELF: NativeBitmap
+	new from_stream(input_stream: NativeInputStream) in "Java" `{ return BitmapFactory.decodeStream(input_stream); `}
+	new from_resources(res: NativeResources, id: Int) in "Java" `{ return BitmapFactory.decodeResource(res, id); `}
+	fun width: Int in "Java" `{ return recv.getWidth(); `}
+	fun height: Int in "Java" `{ return recv.getHeight(); `}
 end
 
 extern class NativeAssetFileDescriptor in "Java" `{ android.content.res.AssetFileDescriptor `}
@@ -129,9 +138,9 @@ extern class NativeAssetFileDescriptor in "Java" `{ android.content.res.AssetFil
 	# fun write_to_parcel(out: Parcel, Int flags) in "Java" `{ return recv.writeToParcel(out, flags); `}
 end
 
-extern class NativeAndroidResources in "Java" `{ android.content.res.Resources `}
+extern class NativeResources in "Java" `{ android.content.res.Resources `}
 	super JavaObject
-	redef type SELF: NativeAndroidResources
+	redef type SELF: NativeResources
 
 	fun get_assets:NativeAssetManager in "Java" `{ return recv.getAssets(); `}
 	fun get_color(id: Int): Int in "Java" `{ return recv.getColor(id); `}
@@ -149,15 +158,11 @@ extern class NativeAndroidResources in "Java" `{ android.content.res.Resources `
 	fun get_resource_type_name(resid: Int): JavaString in "Java" `{ return recv.getResourceTypeName(resid); `}
 end
 
-extern class XmlResourceParser in "Java" `{	android.content.res.XmlResourceParser `}
-# not yet implemented
-end
-
 class ResourcesManager
-	var android_resources: NativeAndroidResources
+	var android_resources: NativeResources
 	var app_package: String
 
-	init(res: NativeAndroidResources, app_package: String)
+	init(res: NativeResources, app_package: String)
 	do
 		self.android_resources = res
 		self.app_package = app_package
@@ -182,5 +187,5 @@ redef class App
 	end
 	fun assets: NativeAssetManager import native_activity in "Java" `{ return App_native_activity(recv).getAssets(); `}
 	fun package_name: JavaString import native_activity in "Java" `{ return App_native_activity(recv).getPackageName(); `}
-	fun resources: NativeAndroidResources import native_activity in "Java" `{ return App_native_activity(recv).getResources(); `}
+	fun resources: NativeResources import native_activity in "Java" `{ return App_native_activity(recv).getResources(); `}
 end
