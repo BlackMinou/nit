@@ -109,7 +109,7 @@ class AssetManager
 	# Native asset manager
 	var native_assets_manager: NativeAssetManager
 
-	init(app: App) do self.native_assets_manager = app.assets.new_global_ref
+	init(app: App) do self.native_assets_manager = app.assets
 
 	# Close this asset manager
 	fun close do native_assets_manager.close
@@ -184,13 +184,6 @@ extern class NativeResources in "Java" `{ android.content.res.Resources `}
 	fun get_resource_name(resid: Int): JavaString in "Java" `{ return recv.getResourceName((int)resid); `}
 	fun get_resource_pakage_name(resid: Int): JavaString in "Java" `{ return recv.getResourcePackageName((int)resid); `}
 	fun get_resource_type_name(resid: Int): JavaString in "Java" `{ return recv.getResourceTypeName((int)resid); `}
-
-	# HACK for bug #845
-	redef fun new_global_ref import sys, Sys.jni_env `{
-		Sys sys = NativeResources_sys(recv);
-		JNIEnv *env = Sys_jni_env(sys);
-		return (*env)->NewGlobalRef(env, recv);
-	`}
 end
 
 # Resource manager for android resources placed in the `res` folder of your app
@@ -203,7 +196,7 @@ class ResourcesManager
 
 	init(res: NativeResources, app_package: String)
 	do
-		self.android_resources = res.new_global_ref
+		self.android_resources = res
 		self.app_package = app_package
 	end
 
