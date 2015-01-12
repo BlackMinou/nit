@@ -255,6 +255,17 @@ redef class App
 		if proximity.enabled then enable_proximity
 	end
 
+	private fun disable_sensors
+	do
+		if not sensors_support_enabled then return
+		if accelerometer.enabled then disable_accelerometer
+		if magnetic_field.enabled then disable_magnetic_field
+		if gyroscope.enabled then disable_gyroscope
+		if light.enabled then disable_light
+		if proximity.enabled then disable_proximity	
+		sensormanager.destroy_event_queue(eventqueue)
+	end
+
 	private fun enable_sensors_management
 	do
 		sensormanager = new ASensorManager.get_instance
@@ -275,8 +286,11 @@ redef class App
 		else
 				if eventqueue.enable_sensor(accelerometer.asensor) < 0 then print "Accelerometer enabling failed"
 			eventqueue.set_event_rate(accelerometer.asensor, accelerometer.event_rate)
+			accelerometer.enabled = true
 		end
 	end
+
+	private fun disable_accelerometer do eventqueue.disable_sensor(accelerometer.asensor)
 
 	private fun enable_magnetic_field
 	do
@@ -286,8 +300,11 @@ redef class App
 		else
 			if eventqueue.enable_sensor(magnetic_field.asensor) < 0 then print "Magnetic Field enabling failed"
 			eventqueue.set_event_rate(magnetic_field.asensor, magnetic_field.event_rate)
+			magnetic_field.enabled = true
 		end
 	end
+
+	private fun disable_magnetic_field do eventqueue.disable_sensor(magnetic_field.asensor)
 
 	private fun enable_gyroscope
 	do
@@ -297,8 +314,11 @@ redef class App
 		else
 			if eventqueue.enable_sensor(gyroscope.asensor) < 0 then print "Gyroscope enabling failed"
 			eventqueue.set_event_rate(gyroscope.asensor, gyroscope.event_rate)
+			gyroscope.enabled = true
 		end
 	end
+
+	private fun disable_gyroscope do eventqueue.disable_sensor(gyroscope.asensor)
 
 	private fun enable_light
 	do
@@ -308,8 +328,10 @@ redef class App
 		else
 			if eventqueue.enable_sensor(light.asensor) < 0 then print "Light enabling failed"
 			eventqueue.set_event_rate(light.asensor, light.event_rate)
+			light.enabled = true
 		end
 	end
+	private fun disable_light do eventqueue.disable_sensor(light.asensor)
 
 	private fun enable_proximity
 	do
@@ -319,14 +341,31 @@ redef class App
 		else
 			if eventqueue.enable_sensor(proximity.asensor) < 0 then print "Proximity enabling failed"
 			eventqueue.set_event_rate(light.asensor, light.event_rate)
+			proximity.enabled = true
 		end
 	end
+	
+	private fun disable_proximity do eventqueue.disable_sensor(proximity.asensor)
 
 	redef fun run
 	do
 		enable_sensors
 
 		super
+	end
+
+	redef fun pause
+	do
+		disable_sensors
+		super
+	end
+
+	redef fun resume
+	do
+		if eventqueue.address_is_null then
+			enable_sensors
+			super
+		end
 	end
 
 	redef fun handle_looper_event(ident, event, data)
