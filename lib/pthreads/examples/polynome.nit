@@ -1,5 +1,42 @@
 module polynome
 
+import pthreads
+import test_barrier
+
+class ValeurThread
+	super HWThread
+	
+	redef type E: Int
+	redef var sec is noinit
+	var p: Polynome
+	var x: Int
+	var inf: Int
+	var sup: Int
+	var seuil: Int
+	redef fun main do
+		return p.valeur_rec_ij(x, inf, sup, seuil)
+	end
+end
+
+class FoisBlocThread
+	super HWThread
+
+	redef type E: Array[Int]
+	redef var sec is noinit
+	var p: Polynome
+	var o: Polynome
+	var inf: Int
+	var sup: Int
+	var res: Array[Int]
+	redef fun main do 
+		for k in [inf..sup] do
+			res[k] = p.fois_seq_k(k, o)
+		end
+		return res
+	end
+
+end
+
 class Polynome
 	var coeffs: Array[Int]
 
@@ -49,8 +86,19 @@ class Polynome
 	end
 
 	fun valeur(x: Int): Int do
-		return valeur_seq_ij(x, 0, taille - 1)
+		var seuil = 1
 
+		return valeur_rec_ij(x, 0, taille - 1, seuil)
+
+	end
+
+	fun valeur_rec_ij(x, i, j, seuil: Int): Int do
+		if j - i + 1 <= seuil then return valeur_seq_ij(x, i, j)
+		var m = (i + j)/2
+		var t = new ValeurThread(0, self, x, i, m, seuil)
+		t.start
+		var v2 = valeur_rec_ij(x, m+1, j, seuil)
+		return t.join + v2
 	end
 	
 	fun valeur_seq_ij(x, i, j: Int): Int do
@@ -82,4 +130,23 @@ class Polynome
 		for k in [0..res.length[ do res[k] = fois_seq_k(k, other)
 		return new Polynome(res)
 	end
+
+	fun fois_forkjoin_bloc(other: Polynome): Polynome do
+		nb_threads = 10
+		var res = new Array[Integer].with_capacity(taille + other.taille - 1)
+		for i in [0..nb_threads] do
+			inf = i * res.length / nb_threads
+			sup = ((i + 1) * res.length / nb_threads) -1
+			
+		end
+	end
 end
+
+var t1 = new Array[Int].with_capacity(100)
+var t2 = new Array[Int].with_capacity(50)
+for i in [0..10000[ do t1[i] = 10.rand
+for i in [0..5000[ do t2[i] = 10.rand
+var p1 = new Polynome(t1)
+var p2 = new Polynome(t2)
+print p1.valeur_rec_ij(1, 0, p1.taille -1, 10)
+print p1.valeur_seq_ij(1, 0, p1.taille - 1)
