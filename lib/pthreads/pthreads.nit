@@ -255,6 +255,7 @@ abstract class Thread
 
 	# Is this thread finished ? True when main returned
 	var is_done = false
+	var running = false
 
 	# Main method of this thread
 	#
@@ -267,6 +268,7 @@ abstract class Thread
 		sys.self_thread_key.set self
 		var r = main
 		self.is_done = true
+		running = false
 		return r
 	end
 
@@ -276,6 +278,7 @@ abstract class Thread
 	fun start
 	do
 		if native != null then return
+		running = true
 		native = new NativePthread.create(self)
 	end
 
@@ -290,6 +293,8 @@ abstract class Thread
 		if native == null then start
 		var r = native.join
 		native = null
+		running = false
+		is_done = false
 		return r.as(E)
 	end
 
