@@ -1,5 +1,15 @@
 import pthreads
 
+redef class Thread
+
+	redef fun start
+	do
+		var finish = sys.current_finish
+		if finish != null then finish.threads.add self
+		super
+	end
+end
+
 class HWThread
 	super Thread
 	var sec: Int
@@ -9,43 +19,37 @@ class HWThread
 		print "World {sec}"
 		return null
 	end
-	redef fun start
-	do
-		var barrier = sys.current_barrier
-		if barrier != null then barrier.threads.add self
-		super
-	end
 end
 
 redef class Sys
-	var current_barrier: nullable XBarrier = null
+	var current_finish: nullable Finished = null
 end
 
-class XBarrier
-	var prev: nullable XBarrier
+class Finished
+	var prev: nullable Finished
 	var threads = new Array[Thread]
 	fun start
 	do
-		prev = sys.current_barrier
-		sys.current_barrier = self
+		prev = sys.current_finish
+		sys.current_finish = self
 	end
 
 	fun finish
 	do
 		for t in threads do t.join
-		sys.current_barrier = prev
+		sys.current_finish = prev
 	end
 end
 
-fun barrier: XBarrier
+fun finish: Finished
 do
-	return new XBarrier
+	return new Finished
 end
 
-with barrier do
+with finish do
 	var t1 = new HWThread(3)
 	t1.start
-	with barrier do
+	with finish do
 		var t2 = new HWThread(2)
 		t2.start
 	end
