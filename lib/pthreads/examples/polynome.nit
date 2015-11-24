@@ -7,7 +7,6 @@ class ValeurThread
 	super HWThread
 	
 	redef type E: Int
-	redef var sec is noinit
 	var p: Polynome
 	var x: Int
 	var inf: Int
@@ -22,7 +21,6 @@ class FoisBlocThread
 	super HWThread
 
 	redef type E: Array[Int]
-	redef var sec is noinit
 	var p: Polynome
 	var o: Polynome
 	var inf: Int
@@ -116,37 +114,48 @@ class Polynome
 	fun fois_seq_k(k: Int, other: Polynome): Int do
 		var res = 0
 		var imin = 0
-		var imax = taille
+		var imax = self.taille
 		for i in [imin..imax[ do
 			for j in [0..other.taille[ do 
-				if i + j == k then res += self[i] * other[j]
+				if (i + j) == k then 
+					res += self[i] * other[j]
+				end
 			end
 		end
 		return res
 	end
 
 	fun fois_seq(other: Polynome): Polynome do
-		var res = new Array[Int].with_capacity(taille + other.taille - 1)
-		for k in [0..res.length[ do res[k] = fois_seq_k(k, other)
+		var taille = self.taille + other.taille - 1
+		var res = new Array[Int].with_capacity(taille)
+		for k in [0..taille[ do res[k] = fois_seq_k(k, other)
 		return new Polynome(res)
 	end
 
 	fun fois_forkjoin_bloc(other: Polynome): Polynome do
-		nb_threads = 10
-		var res = new Array[Integer].with_capacity(taille + other.taille - 1)
+		var nb_threads = 10
+		var res = new Array[Int].filled_with(0, taille + other.taille - 1)
+		var threads = new Array[FoisBlocThread]
 		for i in [0..nb_threads] do
-			inf = i * res.length / nb_threads
-			sup = ((i + 1) * res.length / nb_threads) -1
-			
+			var inf = i * res.length / nb_threads
+			var sup = ((i + 1) * res.length / nb_threads) -1
+			var t = new FoisBlocThread(0, self, other, inf, sup, res)
+			threads.add(t)
+			t.start	
 		end
+		for t in threads do t.join
+		return new Polynome(res)
 	end
 end
 
 var t1 = new Array[Int].with_capacity(100)
 var t2 = new Array[Int].with_capacity(50)
-for i in [0..10000[ do t1[i] = 10.rand
-for i in [0..5000[ do t2[i] = 10.rand
+for i in [0..100[ do t1[i] = 10.rand
+for i in [0..50[ do t2[i] = 10.rand
 var p1 = new Polynome(t1)
 var p2 = new Polynome(t2)
 print p1.valeur_rec_ij(1, 0, p1.taille -1, 10)
 print p1.valeur_seq_ij(1, 0, p1.taille - 1)
+var p3 = p1.fois_seq(p2)
+var p4 = p1.fois_forkjoin_bloc(p2)
+print p3 == p4
