@@ -26,9 +26,9 @@ redef class App
 	# Game world
 	var world: World = generate_world is lazy
 
-	var gnd_texture = new Texture("textures/plane.png")
-
 	var plane_texture = new Texture("textures/plane.png")
+
+	var jet_texture = new Texture("textures/jet.png")
 
 	var helicopter_texture = new Texture("textures/helicopter.png")
 
@@ -391,7 +391,7 @@ end
 
 redef class Platform
 
-	redef var sprite = new Sprite(app.plane_texture, center) is lazy
+	redef var sprite = new Sprite(if center.y < 5000.0 then app.plane_texture else app.jet_texture, center) is lazy
 	init do sprite.scale = width/sprite.texture.width
 
 	redef fun update(dt, world)
@@ -399,9 +399,9 @@ redef class Platform
 		super
 
 		if inertia.x < 0.0 then
-			sprite.invert_x = true
-		else if inertia.x > 0.0 then
 			sprite.invert_x = false
+		else if inertia.x > 0.0 then
+			sprite.invert_x = true
 		end
 	end
 end
