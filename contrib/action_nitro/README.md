@@ -10,22 +10,22 @@ sudo apt-get install build-essential ccache libgc-dev graphviz libunwind-dev pkg
 ~~~
 git clone http://github.com/xymus/nit
 cd nit
-git fetch origin hollnit
-git checkout hollnit
+git fetch origin action_nitro
+git checkout action_nitro
 make
 ~~~
 
 3. Compiler le jeu:
 
 ~~~
-cd contrib/hollnit
+cd contrib/action_nitro
 make
 ~~~
 
 4. Lancer le jeu:
 
 ~~~
-bin/hollnit
+bin/action_nitro
 ~~~
 
 # Compile and run - For those used to Nit
@@ -38,7 +38,7 @@ bin/hollnit
 
 3. Compile the game with a simple call to `make` from this folder.
 
-4. Run with `bin/hollnit`.
+4. Run with `bin/action_nitro`.
 
 # Art
 
