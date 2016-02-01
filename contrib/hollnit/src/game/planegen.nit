@@ -104,7 +104,7 @@ redef class World
 		end
 		for i in enemies.reverse_iterator do
 			if i.out_of_screen(p, self) then
-				print "Despawning enemy"
+				#print "Despawning enemy"
 				i.destroy(self)
 			end
 		end
@@ -114,7 +114,7 @@ redef class World
 		if spawned_plane then
 			var pl = planes.last
 			var pos = new Point3d[Float](pl.center.x, pl.center.y + pl.top / 2.0, 0.0)
-			print "Spawning walking enemy at positon {pos}"
+			#print "Spawning walking enemy at positon {pos}"
 			var enemy = new WalkingEnemy(pos, 3.0, 3.0, new Ak47)
 			enemy.inertia = pl.inertia
 			pl.enemy = enemy
@@ -152,11 +152,11 @@ redef class World
 			xinertia = 10.0.rand
 			yinertia = 0.0
 		else
-			print "Rand failed, should not happen"
+			#print "Rand failed, should not happen"
 			abort
 		end
 		var pos = new Point3d[Float](xspawn, yspawn, 0.0)
-		print "Spawning jetpack enemy at positon {pos}"
+		#print "Spawning jetpack enemy at positon {pos}"
 		var enemy = new JetpackEnemy(pos, 3.0, 3.0, new Ak47)
 		enemy.inertia = new Point3d[Float](xinertia, yinertia, 0.0)
 		enemies.add enemy
