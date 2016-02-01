@@ -61,7 +61,7 @@ redef class App
 	var tree_texture = new Texture("textures/Tree03.png")
 
 	var stars_texture = new Texture("textures/stars.jpg")
-	var stars = new Sprite(stars_texture, new Point3d[Float](0.0, 2000.0, -1000.0)) is lazy
+	var stars = new Sprite(stars_texture, new Point3d[Float](0.0, 2000.0, -600.0)) is lazy
 
 	# ---
 	# Particle effects
@@ -177,8 +177,8 @@ redef class App
 		stars.scale = 4.0
 
 		# City
-		var city_sprite = new Sprite(city_texture, new Point3d[Float](0.0, 600.0, -999.0))
-		city_sprite.scale = 1.2
+		var city_sprite = new Sprite(city_texture, new Point3d[Float](0.0, 370.0, -600.0))
+		city_sprite.scale = 0.8
 		sprites.add city_sprite
 
 		# Trees
@@ -186,7 +186,7 @@ redef class App
 			var s = 0.1 + 0.1.rand
 			var h = tree_texture.height * s
 			var sprite = new Sprite(tree_texture,
-				new Point3d[Float](0.0 & 1500.0, h/2.0 - 10.0*s, 10.0 - 1009.0.rand))
+				new Point3d[Float](0.0 & 1500.0, h/2.0 - 10.0*s, 10.0 - 609.0.rand))
 			sprite.scale = s
 			sprites.add sprite
 
@@ -196,8 +196,8 @@ redef class App
 		end
 
 		# Clouds
-		var no_clouds_layer = 400.0
-		for i in [0..1000[ do
+		var no_clouds_layer = 200.0
+		for i in [0..100[ do
 			var zp = 1.0.rand
 			var x = 0.0 & 1000.0 * zp
 			var y = no_clouds_layer + (world.boss_altitude - no_clouds_layer*2.0).rand
@@ -212,7 +212,7 @@ redef class App
 			end
 		end
 
-		world_camera.far = 1100.0
+		world_camera.far = 700.0
 
 		ui_sprites.add_all([tutorial_wasd, tutorial_arrows, tutorial_chute])
 	end

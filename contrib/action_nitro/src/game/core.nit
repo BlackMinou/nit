@@ -25,7 +25,7 @@ class World
 
 	var player: nullable Player = null is writable
 
-	var boss_altitude = 2000.0
+	var boss_altitude = 1200.0
 
 	var parachute: nullable Parachute = null is writable
 
