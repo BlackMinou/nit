@@ -67,7 +67,10 @@ class World
 		if parachute != null then parachute.update(dt, self)
 
 		var cam = camera_view
-		if player.altitude >= boss_altitude and boss == null then boss = new Boss(new Point3d[Float](cam.left + 40.0, cam.top - 20.0, 0.0), 100.0, 100.0, new Ak47)
+		if player.altitude >= boss_altitude and boss == null then
+			boss = new Boss(new Point3d[Float](player.center.x, cam.top - 20.0, 0.0), 64.0, 4.0, new Ak47)
+			enemies.add boss.as(not null)
+		end
 	end
 
 	fun explode(center: Point3d[Float], force: Float)
