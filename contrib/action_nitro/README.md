@@ -29,6 +29,12 @@
 	bin/action_nitro
 	~~~
 
+5. Pour tricher et passer directement au boss:
+
+	~~~
+	bin/action_nitro dev
+	~~~
+
 # Compile and run - For those used to Nit
 
 1. Compile the Nit tools from the root of this repository.
