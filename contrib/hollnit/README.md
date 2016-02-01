@@ -1,4 +1,34 @@
-# Compile and run
+# Guide complete pour les nouveaux avec Nit
+
+1. Configurer votre système:
+
+~~~
+sudo apt-get install build-essential ccache libgc-dev graphviz libunwind-dev pkg-config libgles2-mesa-dev libsdl1.2-dev libsdl-image1.2-dev libsdl-ttf2.0-dev inkscape mpg123
+~~~
+
+2. Cloner la bonne branch pour le jeu et compiler Nit:
+~~~
+git clone http://github.com/xymus/nit
+cd nit
+git fetch origin hollnit
+git checkout hollnit
+make
+~~~
+
+3. Compiler le jeu:
+
+~~~
+cd contrib/hollnit
+make
+~~~
+
+4. Lancer le jeu:
+
+~~~
+bin/hollnit
+~~~
+
+# Compile and run - For those used to Nit
 
 1. Compile the Nit tools from the root of this repository.
    Refer to the root README file for directions.
