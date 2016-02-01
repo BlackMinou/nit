@@ -4,6 +4,9 @@ intrude import core
 
 redef class Enemy
 
+	# Square of the range to shoot at the player
+	fun range2: Float do return 32.0*32.0
+
 	redef fun update(dt, world)
 	do
 		super
@@ -11,7 +14,7 @@ redef class Enemy
 		var player = world.player
 		if is_alive and player != null and player.is_alive and can_shoot(world) then
 			# Shoot if possible
-			if player.center.dist2(self.center) < 20.0 * 20.0 then
+			if player.center.dist2(self.center) < range2 then
 				aim_and_shoot(world, player)
 			end
 		end
@@ -60,6 +63,8 @@ redef class JetpackEnemy
 end
 
 redef class Boss
+	redef fun range2 do return 64.0*64.0
+
 	redef fun update(dt, world) do
 		super
 		if true then return
