@@ -66,16 +66,14 @@ class World
 		for i in player_bullets.reverse_iterator do i.update(dt, self)
 		if parachute != null then parachute.update(dt, self)
 
-		var boss = boss
-		if boss != null then boss.update(dt, self)
-
 		var cam = camera_view
 		if player.altitude >= boss_altitude and boss == null then
 			var w = 64.0
-			boss = new Boss(new Point3d[Float](player.center.x, cam.top - 20.0, 0.0), w, 4.0, new Ak47)
+			var boss = new Boss(new Point3d[Float](player.center.x, cam.top - 20.0, 0.0), w, 4.0, new Ak47)
 			self.boss = boss
+			enemies.add boss
 
-			for i in 8.times do
+			for i in 6.times do
 				var e = new WalkingEnemy(new Point3d[Float](boss.center.x & (w/2.0), boss.center.y + 4.0, -1.0.rand), 4.0, 4.0, new Ak47)
 				enemies.add e
 			end

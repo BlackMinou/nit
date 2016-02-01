@@ -97,6 +97,15 @@ redef class App
 	private var tutorial_chute = new Sprite(app.texts_sheet.tutorial_chute,
 		app.ui_camera.center.offset(0.0, -450.0, 0.0)) is lazy
 
+	private var outro_directed = new Sprite(app.texts_sheet.directed,
+		app.ui_camera.center.offset(0.0, 400.0, 0.0)) is lazy
+
+	private var outro_created = new Sprite(app.texts_sheet.created,
+		app.ui_camera.center.offset(0.0, -200.0, 0.0)) is lazy
+
+	# ---
+	# Counters
+
 	var score_counter = new CounterSprites(texts_sheet.n,
 		new Point3d[Float](32.0, -64.0, 0.0))
 
@@ -292,7 +301,21 @@ redef class App
 		end
 
 		# Detect if game won
+		var won_at = won_at
+		if won_at == null then
+			var boss = world.boss
+			if boss != null and not boss.is_alive then
+				self.won_at = world.t
+			end
+		else
+			# Show outro
+			var t_since_won = world.t - won_at
+			if t_since_won > 1.0 and not ui_sprites.has(outro_directed) then ui_sprites.add outro_directed
+			if t_since_won > 2.0 and not ui_sprites.has(outro_created) then ui_sprites.add outro_created
+		end
 	end
+
+	var won_at: nullable Float = null
 
 	# Remove tutorial sprite about WASD from `ui_sprites`
 	private fun hide_tutorial_wasd do if ui_sprites.has(tutorial_wasd) then ui_sprites.remove(tutorial_wasd)
@@ -393,6 +416,11 @@ redef class Human
 	do
 		super
 
+		death_animation
+	end
+
+	fun death_animation
+	do
 		var force = 4.0
 		health = 0.0
 		for i in 32.times do
@@ -429,6 +457,17 @@ redef class Boss
 		var actor = new Actor(app.iss_model, center)
 		actor.rotation = pi/2.0
 		return actor
+	end
+
+	redef fun death_animation
+	do
+		var force = 64.0
+		app.explosions.add(center, 4096.0 * force, 0.3)
+		for i in (8.0*force).to_i.times do
+			app.explosions.add(
+				new Point3d[Float](center.x & force, center.y & force/8.0, center.z & force),
+				(2048.0 & 1024.0) * force, 0.3 + 5.0.rand, 5.0.rand)
+		end
 	end
 end
 

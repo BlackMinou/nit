@@ -24,11 +24,11 @@
      borderopacity="0"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.98994949"
-     inkscape:cx="321.74269"
-     inkscape:cy="385.92556"
+     inkscape:zoom="2.8"
+     inkscape:cx="543.7148"
+     inkscape:cy="237.36407"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="0tutorial_chute"
      showgrid="false"
      inkscape:window-width="2558"
      inkscape:window-height="1379"
@@ -1212,9 +1212,10 @@
          inkscape:connector-curvature="0" />
       <path
          style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Armalite Rifle;-inkscape-font-specification:Armalite Rifle"
-         d="m 519.65625,699.09375 c -4.56197,0.6512 -9.18991,3.11822 -10.0625,8.03125 -1.68836,4.01979 0.15501,8.75301 1.84375,12.0625 -4.11638,2.80827 -3.70265,9.29114 -1.65625,13.28125 2.16363,3.62706 6.15047,1.15151 9.21875,1.78125 4.70833,-0.45999 9.93719,1.97299 13.96875,-1.8125 6.34519,-4.23485 7.22088,-14.05836 2.0625,-19.1875 3.09831,-0.97549 3.95636,-2.51371 3.1875,-5.84375 0.99028,-4.58035 -2.88905,-10.16807 -7.8125,-7.71875 -3.84207,-0.69192 -6.98555,0.08 -10.75,-0.59375 z m 7.28125,18.53125 c -3.65757,3.55044 -0.87576,-3.1695 0,0 z"
+         d="m 519.15117,699.7251 c -10.92293,3.62787 -11.32317,22.362 -8.10723,25.42004 2.16363,3.62706 5.89793,7.97004 8.96621,8.59978 4.70833,-0.45999 7.53808,3.61449 12.9586,-1.30742 6.34519,-4.23485 7.22088,-14.05836 2.0625,-19.1875 3.09831,-0.97549 3.95636,-2.51371 3.1875,-5.84375 0.99028,-4.58035 -2.88905,-10.16807 -7.8125,-7.71875 -3.84207,-0.69192 -7.49063,0.71135 -11.25508,0.0376 z m 11.19559,17.39482 c -7.82444,10.49524 -5.54771,-11.25072 0,0 z"
          id="path3322"
-         inkscape:connector-curvature="0" />
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="cccccccccc" />
       <path
          style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Armalite Rifle;-inkscape-font-specification:Armalite Rifle"
          d="m 553.6875,699.21875 c -2.61891,0.70808 -4.77391,1.43455 -7.4375,0.5 -3.82441,0.78093 -8.43531,-1.05485 -11.6875,1.28125 -2.75871,2.78803 -2.60046,7.70844 -0.3125,10.53125 -0.26399,5.58155 1.04447,11.65655 -2.09375,16.5625 -0.81925,3.33647 1.65019,8.55374 5.65625,7.0625 4.34435,1.33086 9.06583,-0.40327 12.96875,-1 4.74942,1.35709 10.6525,1.02301 15.09375,-0.75 3.35288,-2.74124 1.49846,-7.20225 0,-10.125 -1.79528,-3.11502 0.3305,-6.09264 -0.15625,-9.46875 -1.07415,-3.56339 3.32251,-5.63514 1.84375,-9.40625 -0.20375,-4.01211 -4.2281,-5.66517 -7.53125,-4.65625 -2.10975,-0.65691 -4.19033,-0.36495 -6.34375,-0.53125 z"
@@ -1245,7 +1246,7 @@
            sodipodi:role="line"
            id="tspan3276"
            x="0.12254865"
-           y="730.48065">Use space to open your shute</tspan></text>
+           y="730.48065">Use space to open your Chute</tspan></text>
     </g>
   </g>
 </svg>
