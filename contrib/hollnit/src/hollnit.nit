@@ -290,6 +290,8 @@ redef class App
 				end
 			end
 		end
+
+		# Detect if game won
 	end
 
 	# Remove tutorial sprite about WASD from `ui_sprites`
