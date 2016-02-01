@@ -86,10 +86,10 @@ redef class App
 	private var texts_sheet = new TextsImages
 
 	private var tutorial_wasd = new Sprite(app.texts_sheet.tutorial_wasd,
-		app.ui_camera.center.offset(0.0, -150.0, 0.0)) is lazy
+		app.ui_camera.center.offset(0.0, -250.0, 0.0)) is lazy
 
 	private var tutorial_arrows = new Sprite(app.texts_sheet.tutorial_arrows,
-		app.ui_camera.center.offset(0.0, -300.0, 0.0)) is lazy
+		app.ui_camera.center.offset(0.0, -350.0, 0.0)) is lazy
 
 	private var tutorial_chute = new Sprite(app.texts_sheet.tutorial_chute,
 		app.ui_camera.center.offset(0.0, -450.0, 0.0)) is lazy
