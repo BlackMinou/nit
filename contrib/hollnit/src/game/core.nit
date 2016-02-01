@@ -25,7 +25,7 @@ class World
 
 	var player: nullable Player = null is writable
 
-	var boss_altitude = 10000.0
+	var boss_altitude = 2000.0
 
 	var parachute: nullable Parachute = null is writable
 
@@ -513,7 +513,7 @@ end
 class Boss
 	super Enemy
 
-	redef fun max_health do return 20000.0
+	redef fun max_health do return 2000.0
 
 	redef fun affected_by_gravity do return false
 

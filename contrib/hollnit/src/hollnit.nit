@@ -107,7 +107,7 @@ redef class App
 	do
 		var world = new World
 		world.spawn_player
-		world.planes.add new Platform(new Point3d[Float](0.0, 190.0, 0.0), 16.0, 4.0)
+		world.planes.add new Platform(new Point3d[Float](0.0, world.player.center.y - 10.0, 0.0), 16.0, 4.0)
 		return world
 	end
 
