@@ -30,18 +30,19 @@ redef class Enemy
 
 	fun go_to(pc: Point3d[Float], displacement: Float) do
 		var sc = center
+		var k = 1.0
 		if pc.x < sc.x then
-			inertia.x -= 2.0
+			inertia.x -= k
 			if inertia.x < -displacement then inertia.x = -displacement
 		else
-			inertia.x += 2.0
+			inertia.x += k
 			if inertia.x > displacement then inertia.x = displacement
 		end
 		if pc.y < sc.y then
-			inertia.y -= 2.0
+			inertia.y -= k
 			if inertia.y < -displacement then inertia.y = -displacement
 		else
-			inertia.y += 2.0
+			inertia.y += k
 			if inertia.y > displacement then inertia.y = displacement
 		end
 	end
