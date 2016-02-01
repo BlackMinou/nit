@@ -529,6 +529,10 @@ redef class Bullet
 	end
 end
 
+redef class Powerup
+	init do sprite.scale = 3.0/sprite.texture.width
+end
+
 redef class Ak47PU
 	redef var sprite = new Sprite(app.ak47_texture, center) is lazy
 end
