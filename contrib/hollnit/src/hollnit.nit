@@ -266,6 +266,21 @@ redef class App
 				hide_tutorial_wasd
 			end
 		end
+
+		if player != null and player.is_alive and player.altitude >= world.boss_altitude then
+			var d = 100.0*dt
+			for key in pressed_keys do
+				if key == "up" then
+					player.y_moving += d
+				else if key == "down" then
+					player.y_moving -= d
+				else if key == "left" then
+					player.x_moving -= d
+				else if key == "right" then
+					player.x_moving += d
+				end
+			end
+		end
 	end
 
 	# Remove tutorial sprite about WASD from `ui_sprites`
@@ -321,22 +336,6 @@ redef class App
 					if player.moving == 0.0 then
 					player.sprite.as(PlayerSprite).stop_running
 					else player.sprite.as(PlayerSprite).start_running
-				else
-					if event.name == "up" and event.is_down then
-						player.y_moving = 50.0
-					end
-
-					if event.name == "down" and event.is_down then
-						player.y_moving = -50.0
-					end
-
-					if event.name == "left" then
-						player.x_moving = -50.0
-					end
-
-					if event.name == "right" then
-						player.x_moving = 50.0
-					end
 				end
 			end
 
@@ -456,7 +455,6 @@ redef class Player
 		end
 
 		# Display respawn instructions
-		# TODO explosions and delay
 		app.ui_sprites.add new Sprite(app.texts_sheet.respawn, app.ui_camera.center)
 	end
 end
