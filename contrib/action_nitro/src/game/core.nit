@@ -110,7 +110,7 @@ class World
 
 		if pos == null then pos = new Point3d[Float](0.0, alt, 0.0)
 
-		player = new Player(pos, 4.0, 4.0, new Ak47)
+		player = new Player(pos, 4.0, 4.0, new Pistol)
 	end
 end
 
@@ -677,7 +677,7 @@ end
 class Ak47
 	super Weapon
 	
-	redef var damage = 100.0
+	redef var damage = 10.0
 
 	redef var cooldown = 0.1
 
@@ -685,7 +685,7 @@ class Ak47
 
 	redef var bullet_lifespan = 3.0
 
-	redef var bullet_number = 10000
+	redef var bullet_number = 200
 end
 
 class Ak47PU
