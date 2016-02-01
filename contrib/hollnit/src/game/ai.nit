@@ -61,6 +61,10 @@ end
 
 redef class Boss
 	redef fun update(dt, world) do
+		super
+		if true then return
+		# TODO choose whether the boss moves or not, if it does it messes with bullets
+
 		var player = world.player
 		if is_alive and player != null and player.is_alive and can_shoot(world) then
 			var pc = player.center
