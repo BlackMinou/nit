@@ -68,8 +68,14 @@ class World
 
 		var cam = camera_view
 		if player.altitude >= boss_altitude and boss == null then
-			boss = new Boss(new Point3d[Float](player.center.x, cam.top - 20.0, 0.0), 64.0, 4.0, new Ak47)
+			var w = 64.0
+			boss = new Boss(new Point3d[Float](player.center.x, cam.top - 20.0, 0.0), w, 4.0, new Ak47)
 			enemies.add boss.as(not null)
+
+			for i in 8.times do
+				var e = new WalkingEnemy(new Point3d[Float](boss.center.x & (w/2.0), boss.center.y + 10.0, -1.0.rand), 4.0, 4.0, new Ak47)
+				enemies.add e
+			end
 		end
 	end
 
