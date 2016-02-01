@@ -101,7 +101,8 @@ class World
 			pos.y += 50.0
 		end
 
-		if pos == null then pos = new Point3d[Float](0.0, 200.0, 0.0)
+		if pos == null then pos = new Point3d[Float](0.0, boss_altitude - 10.0, 0.0)
+		# 200.0
 
 		player = new Player(pos, 4.0, 4.0, new Ak47)
 	end
