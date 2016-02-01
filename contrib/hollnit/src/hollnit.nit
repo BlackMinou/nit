@@ -60,6 +60,9 @@ redef class App
 
 	var tree_texture = new Texture("textures/Tree03.png")
 
+	var stars_texture = new Texture("textures/stars.jpg")
+	var stars = new Sprite(stars_texture, new Point3d[Float](0.0, 2000.0, -1000.0)) is lazy
+
 	# ---
 	# Particle effects
 
@@ -160,6 +163,10 @@ redef class App
 		ground.scale = 5000.0
 		actors.add ground
 
+		# Stars
+		sprites.add stars
+		stars.scale = 4.0
+
 		# City
 		var city_sprite = new Sprite(city_texture, new Point3d[Float](0.0, 600.0, -999.0))
 		city_sprite.scale = 1.2
@@ -218,6 +225,7 @@ redef class App
 		var p = altitude / world.boss_altitude
 		var ip = 1.0 - p
 		glClearColor(0.3*ip, 0.3*ip, ip, 1.0)
+		stars.alpha = (1.4*p-0.4).min(1.0).max(0.0)
 
 		# Randomly add smoke
 		var poss = [
