@@ -488,7 +488,7 @@ redef class World
 
 		# Particles
 		app.explosions.add(center, 4096.0 * force, 0.3)
-		for i in 64.times do
+		for i in (4.0*force).to_i.times do
 			app.explosions.add(
 				new Point3d[Float](center.x & force, center.y & force/2.0, center.z & force),
 				(2048.0 & 1024.0) * force, 0.3 & 0.3, 0.5.rand)
