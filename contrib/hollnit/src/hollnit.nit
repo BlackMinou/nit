@@ -378,7 +378,11 @@ redef class Body
 	redef fun destroy(world)
 	do
 		super
-		app.sprites.remove sprite
+
+		var actor = actor
+		if actor != null then
+			app.actors.remove actor
+		else app.sprites.remove sprite
 	end
 end
 
