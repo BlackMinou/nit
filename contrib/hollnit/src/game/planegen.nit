@@ -115,7 +115,7 @@ redef class World
 			var pl = planes.last
 			var pos = new Point3d[Float](pl.center.x, pl.center.y + pl.top / 2.0, 0.0)
 			#print "Spawning walking enemy at positon {pos}"
-			var enemy = new WalkingEnemy(pos, 3.0, 3.0, new Ak47)
+			var enemy = new WalkingEnemy(pos, 3.0, 3.0, new Pistol)
 			enemy.inertia = pl.inertia
 			pl.enemy = enemy
 			enemies.add enemy
@@ -157,7 +157,7 @@ redef class World
 		end
 		var pos = new Point3d[Float](xspawn, yspawn, 0.0)
 		#print "Spawning jetpack enemy at positon {pos}"
-		var enemy = new JetpackEnemy(pos, 3.0, 3.0, new Ak47)
+		var enemy = new JetpackEnemy(pos, 3.0, 3.0, new Pistol)
 		enemy.inertia = new Point3d[Float](xinertia, yinertia, 0.0)
 		enemies.add enemy
 	end

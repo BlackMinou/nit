@@ -23,6 +23,8 @@ class World
 
 	var player_bullets = new Array[Bullet]
 
+	var powerups = new Array[Powerup]
+
 	var player: nullable Player = null is writable
 
 	var boss_altitude = 2000.0
@@ -58,6 +60,7 @@ class World
 
 		for plane in planes.reverse_iterator do plane.update(dt, self)
 		for enemy in enemies.reverse_iterator do enemy.update(dt, self)
+		for powerup in powerups.reverse_iterator do powerup.update(dt, self)
 
 		var player = player
 		if player != null then player.update(dt, self)
@@ -213,6 +216,7 @@ class Platform
 		super
 		world.explode(center, width)
 		world.score += 1
+		if 100.0.rand > 90.0 then world.powerups.add(new Powerup(self.center, world))
 	end
 
 	redef fun destroy(world)
@@ -479,11 +483,31 @@ end
 class Player
 	super Human
 
+	var basic_weapon = new Pistol
+
+	redef fun shoot(angle, world)
+	do
+		super
+		weapon.bullet_number -= 1
+		if weapon.bullet_number <= 0 then self.weapon = basic_weapon
+	end
+
 	redef fun register_bullet(new_center, angle, world)
 	do
 		var bullet = new PlayerBullet(new_center, 2.0, 2.0, angle, self.weapon, world.t,  world.planes, world.enemies)
 		world.player_bullets.add(bullet)
 		return bullet
+	end
+
+	redef fun update(dt, world)
+	do
+		super
+		for p in world.powerups do
+			if self.intersects(p) then
+				p.apply(self)
+				p.die(world)
+			end
+		end
 	end
 
 	redef fun max_health do return 200.0
@@ -498,6 +522,7 @@ abstract class Enemy
 	do
 		super
 		world.score += 1
+		if 100.0.rand > 90.0 then world.powerups.add(new Powerup(self.center, world))
 	end
 
 	redef fun destroy(world)
@@ -533,11 +558,42 @@ end
 
 class Powerup
 	super Body
+
+	var lifespan = 5.0
+	var created: Float is writable, noinit
+
+	new(center: Point3d[Float], world: World)
+	do
+		var v = 3.rand
+		var powerup: Powerup
+		if v == 0 then powerup = new Ak47PU(center, 30.0, 30.0)
+		if v == 1 then 
+			powerup = new RocketLauncherPU(center, 30.0, 30.0)
+		else
+			powerup = new Life(center, 30.0, 30.0)
+		end
+		powerup.created = world.t
+		return powerup
+	end
+
+	fun apply(player: Player) do end
+
+	redef fun update(dt, world)
+	do
+		super
+		if world.t - created > lifespan then die(world)
+	end
+
+	redef fun die(world) do super
+
+	redef fun destroy(world) do world.powerups.remove(self)
 end
 
 class Weapon
 
 	var last_shot: Float is writable, noinit
+
+	var bullet_number: Int is writable, noinit
 
 	fun damage: Float is abstract
 
@@ -613,14 +669,62 @@ end
 
 class Ak47
 	super Weapon
-
-	redef var damage = 10.0
+	
+	redef var damage = 100.0
 
 	redef var cooldown = 0.1
 
 	redef var power = 50.0
 
 	redef var bullet_lifespan = 3.0
+
+	redef var bullet_number = 10000
+end
+
+class Ak47PU
+	super Powerup
+
+	redef fun apply(player) do player.weapon = new Ak47
+end
+
+class RocketLauncher
+	super Weapon
+	
+	redef var damage = 500.0
+
+	redef var cooldown = 3.0
+
+	redef var power = 20.0
+
+	redef var bullet_lifespan = 5.0
+
+	redef var bullet_number = 20
+end
+
+class RocketLauncherPU
+	super Powerup
+
+	redef fun apply(player) do player.weapon = new RocketLauncher
+end
+
+class Pistol
+	super Weapon
+
+	redef var damage = 10.0
+
+	redef var cooldown = 0.3
+	
+	redef var power = 30.0
+	
+	redef var bullet_lifespan = 3.0
+
+	redef var bullet_number = 10000
+end
+
+class Life
+	super Powerup
+
+	redef fun apply(player) do player.health += 50.0
 end
 
 redef class Float

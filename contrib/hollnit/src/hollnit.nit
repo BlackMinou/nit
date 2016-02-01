@@ -45,6 +45,14 @@ redef class App
 
 	var iss_model = new Model("models/iss.obj")
 
+
+	# PowerUps textures
+	var ak47_texture = new Texture("textures/Ak47.png")
+
+	var launcher_texture = new Texture("textures/launcher.png")
+
+	var potion_texture = new Texture("textures/potion.png")
+
 	# Ground
 	private var ground_texture = new Texture("textures/fastgras01.png")
 
@@ -480,6 +488,18 @@ redef class Bullet
 		sprite.scale = 0.05
 		sprite.rotation = -angle
 	end
+end
+
+redef class Ak47PU
+	redef var sprite = new Sprite(app.ak47_texture, center) is lazy
+end
+
+redef class RocketLauncherPU
+	redef var sprite = new Sprite(app.launcher_texture, center) is lazy
+end
+
+redef class Life
+	redef var sprite = new Sprite(app.potion_texture, center) is lazy
 end
 
 redef class World
