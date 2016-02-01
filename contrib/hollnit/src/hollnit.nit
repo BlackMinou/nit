@@ -107,7 +107,7 @@ redef class App
 	do
 		var world = new World
 		world.spawn_player
-		world.planes.add new Platform(new Point3d[Float](0.0, world.player.center.y - 10.0, 0.0), 16.0, 4.0)
+		world.planes.add new Airplane(new Point3d[Float](0.0, world.player.center.y - 10.0, 0.0), 16.0, 4.0)
 		return world
 	end
 
@@ -116,8 +116,8 @@ redef class App
 		var world = new World
 
 		for i in [0..100] do
-			world.planes.add new Platform(new Point3d[Float](0.0, i.to_f*16.0 + 8.0, 0.0), 16.0, 4.0)
-			world.planes.add new Platform(new Point3d[Float](0.0, i.to_f*16.0 + 16.0, 0.0), 16.0, 4.0)
+			world.planes.add new Airplane(new Point3d[Float](0.0, i.to_f*16.0 + 8.0, 0.0), 16.0, 4.0)
+			world.planes.add new Airplane(new Point3d[Float](0.0, i.to_f*16.0 + 16.0, 0.0), 16.0, 4.0)
 
 		end
 

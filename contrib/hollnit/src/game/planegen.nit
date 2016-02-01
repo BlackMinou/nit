@@ -82,7 +82,7 @@ redef class World
 		var platform_type = 100.rand
 		var plane: Platform
 		if platform_type < 90 then
-			plane = new Platform(pos, 16.0, 4.0)
+			plane = new Airplane(pos, 16.0, 4.0)
 		else
 			plane = new Helicopter(pos, 16.0, 4.0)
 		end
