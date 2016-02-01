@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.49497475"
-     inkscape:cx="532.70933"
-     inkscape:cy="311.38177"
+     inkscape:cx="542.81086"
+     inkscape:cy="301.28024"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -47,7 +47,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -57,13 +57,13 @@
      id="layer1"
      transform="translate(0,27.637832)">
     <image
-       sodipodi:absref="/home/xymus/projects/nit/contrib/hollnit/art/splash_back.jpg"
+       sodipodi:absref="/home/xymus/projects/nit/contrib/action_nitro/art/splash_back.jpg"
        xlink:href="splash_back.jpg"
-       width="1933.7841"
-       height="1289.1893"
-       id="image2993"
+       y="-56.500843"
        x="-1.4648297"
-       y="-56.500843" />
+       id="image2993"
+       height="1289.1893"
+       width="1933.7841" />
     <text
        xml:space="preserve"
        style="font-size:167.02766418px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Armalite Rifle;-inkscape-font-specification:Armalite Rifle"
@@ -76,7 +76,7 @@
          x="667.60944"
          y="180.32715">Action Nitro</tspan></text>
     <g
-       transform="matrix(2.0178149,0,0,2.0178149,921.10427,-44.877914)"
+       transform="matrix(2.0178149,0,0,2.0178149,921.10427,-158.015)"
        id="0created"
        inkscape:label="#g3706">
       <g
