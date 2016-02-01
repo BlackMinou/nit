@@ -14,9 +14,9 @@ redef class World
 		var p = player
 		if p == null then return false
 		if p.altitude >= boss_altitude then
-			for i in planes.reverse_iterator do
-				i.destroy(self)
-			end
+			#for i in planes.reverse_iterator do
+				#i.destroy(self)
+			#end
 			return false
 		end
 		for i in planes.reverse_iterator do
@@ -97,8 +97,8 @@ redef class World
 		var p = player
 		if p == null then return
 		if p.altitude >= boss_altitude then
-			for i in enemies.reverse_iterator do
-				i.destroy(self)
+			for e in enemies.reverse_iterator do if e isa JetpackEnemy then
+				e.destroy(self)
 			end
 			return
 		end
