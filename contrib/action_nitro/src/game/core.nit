@@ -60,13 +60,13 @@ class World
 
 		for plane in planes.reverse_iterator do plane.update(dt, self)
 		for enemy in enemies.reverse_iterator do enemy.update(dt, self)
-		for powerup in powerups.reverse_iterator do powerup.update(dt, self)
 
 		var player = player
 		if player != null then player.update(dt, self)
 
 		for i in enemy_bullets.reverse_iterator do i.update(dt, self)
 		for i in player_bullets.reverse_iterator do i.update(dt, self)
+		for powerup in powerups.reverse_iterator do powerup.update(dt, self)
 		if parachute != null then parachute.update(dt, self)
 
 		var cam = camera_view
@@ -219,7 +219,7 @@ abstract class Platform
 		super
 		world.explode(center, width)
 		world.score += 1
-		if 100.0.rand > 90.0 then world.powerups.add(new Powerup(self.center, world))
+		if 100.0.rand > 50.0 then world.powerups.add(new Powerup(self.center, world))
 	end
 
 	redef fun destroy(world)
@@ -495,8 +495,11 @@ class Player
 	redef fun shoot(angle, world)
 	do
 		super
-		weapon.bullet_number -= 1
-		if weapon.bullet_number <= 0 then self.weapon = basic_weapon
+		if can_shoot(world) then
+			weapon.bullet_number -= 1
+			if weapon.bullet_number <= 0 then self.weapon = basic_weapon
+	
+		end
 	end
 
 	redef fun register_bullet(new_center, angle, world)
@@ -509,7 +512,7 @@ class Player
 	redef fun update(dt, world)
 	do
 		super
-		for p in world.powerups do
+		for p in world.powerups.reverse_iterator do
 			if self.intersects(p) then
 				p.apply(self)
 				p.die(world)
@@ -568,19 +571,23 @@ class Powerup
 
 	var lifespan = 5.0
 	var created: Float is writable, noinit
-
+	
+	
+	redef fun affected_by_gravity do return false
+	
 	new(center: Point3d[Float], world: World)
 	do
 		var v = 3.rand
-		var powerup: Powerup
-		if v == 0 then powerup = new Ak47PU(center, 30.0, 30.0)
-		if v == 1 then 
-			powerup = new RocketLauncherPU(center, 30.0, 30.0)
-		else
-			powerup = new Life(center, 30.0, 30.0)
+		print v
+		var powerup: nullable Powerup = null
+		if v == 0 then powerup = new Ak47PU(center, 5.0, 5.0)
+		if v == 1 then powerup = new RocketLauncherPU(center, 5.0, 5.0)
+		if v == 2 then powerup = new Life(center, 5.0, 5.0)
+		if powerup != null then
+			powerup.inertia.y = -2.0
+			powerup.created = world.t
 		end
-		powerup.created = world.t
-		return powerup
+		return powerup.as(not null)
 	end
 
 	fun apply(player: Player) do end
@@ -591,9 +598,11 @@ class Powerup
 		if world.t - created > lifespan then die(world)
 	end
 
-	redef fun die(world) do super
-
-	redef fun destroy(world) do world.powerups.remove(self)
+	redef fun destroy(world)
+	do
+		super
+		world.powerups.remove(self)
+	end
 end
 
 class Weapon
@@ -681,7 +690,7 @@ class Ak47
 
 	redef var cooldown = 0.1
 
-	redef var power = 50.0
+	redef var power = 70.0
 
 	redef var bullet_lifespan = 3.0
 
@@ -699,9 +708,9 @@ class RocketLauncher
 	
 	redef var damage = 500.0
 
-	redef var cooldown = 3.0
+	redef var cooldown = 1.5
 
-	redef var power = 20.0
+	redef var power = 50.0
 
 	redef var bullet_lifespan = 5.0
 
@@ -721,7 +730,7 @@ class Pistol
 
 	redef var cooldown = 0.3
 	
-	redef var power = 30.0
+	redef var power = 70.0
 	
 	redef var bullet_lifespan = 3.0
 
