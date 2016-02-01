@@ -44,7 +44,6 @@ bin/action_nitro
 
 * Character art created by jeremygooch under CC-BY 3.0.
 * City skyline created by Alucard
-* Biplane created by Bert-o-Naught
 * Helicopter model by SpriteAttack under CC-BY-SA 3.0.
 * Particles and others created by kenny.nl under CC0.
 * Font Armalite Rifle by Vic Fieger
