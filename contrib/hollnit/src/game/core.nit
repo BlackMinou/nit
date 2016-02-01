@@ -314,12 +314,6 @@ abstract class Human
 
 	var parachute_deployed: Bool = false
 
-	# Used when in space, x movement
-	var x_moving = 0.0 is writable
-
-	# Used when in space, y movement
-	var y_moving = 0.0 is writable
-
 	redef var affected_by_gravity = true
 
 	# Altitude (in meters)
@@ -445,13 +439,7 @@ abstract class Human
 		affected_by_gravity = false
 
 		super
-		inertia.x = 0.0
-		inertia.y = 0.0
 
-		center.x += x_moving * dt
-		center.y += y_moving * dt
-
-		print "Changed player inertia, x = {inertia.x}, y = {inertia.y}"
 	end
 
 	# Is the weapon ready to shoot yet?

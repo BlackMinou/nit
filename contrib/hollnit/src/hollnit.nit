@@ -275,17 +275,18 @@ redef class App
 			end
 		end
 
+		# Low-gravity controls
 		if player != null and player.is_alive and player.altitude >= world.boss_altitude then
-			var d = 100.0*dt
+			var d = 50.0*dt
 			for key in pressed_keys do
 				if key == "up" then
-					player.y_moving += d
+					player.inertia.y += d
 				else if key == "down" then
-					player.y_moving -= d
+					player.inertia.y -= d
 				else if key == "left" then
-					player.x_moving -= d
+					player.inertia.x -= d
 				else if key == "right" then
-					player.x_moving += d
+					player.inertia.x += d
 				end
 			end
 		end
