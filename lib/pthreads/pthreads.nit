@@ -128,7 +128,9 @@ private extern class NativePthread in "C" `{ pthread_t * `}
 
 	fun equal(other: NativePthread): Bool `{ return pthread_equal(*self, *other); `}
 
-	fun kill(signal: Int) `{ pthread_kill(*self, signal); `}
+	fun kill(signal: Int): Int `{ return pthread_kill(*self, signal); `}
+
+	fun cancel `{ pthread_cancel(*self); `}
 end
 
 private extern class NativePthreadAttr in "C" `{ pthread_attr_t * `}
@@ -238,12 +240,13 @@ private extern class NativePthreadCond in "C" `{ pthread_cond_t * `}
 
 	fun destroy `{ pthread_cond_destroy(self); `}
 
-	fun signal `{ pthread_cond_signal(self); `}
+	fun signal: Int `{ return pthread_cond_signal(self); `}
 
 	fun broadcast `{ pthread_cond_broadcast(self);  `}
 
 	fun wait(mutex: NativePthreadMutex) `{ pthread_cond_wait(self, mutex); `}
 end
+
 
 #
 ## Nity part
@@ -375,6 +378,25 @@ class Mutex
 		end
 		self.native = null
 	end
+end
+
+# Nit version of a condition variable
+class PthreadCond
+	super FinalizableOnce
+
+	private var native = new NativePthreadCond
+
+	# Destroy `self`
+	redef fun finalize_once do native.destroy
+
+	# Signal at least one thread waiting to wake up
+	fun signal: Int do return native.signal
+
+	# Signal all the waiting threads to wake up
+	fun broadcast do native.broadcast
+
+	# Make the current thread waiting for a signal ( `mutex` should be locked)
+	fun wait(mutex: Mutex) do native.wait(mutex.native.as(not null))
 end
 
 # Barrier synchronization tool
