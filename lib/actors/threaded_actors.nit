@@ -22,13 +22,23 @@ redef abstract class Actor
 	super Thread
 
 	# Mailbox used to receive and process messages
-	var mailbox = new BlockingQueue[Message]
+	var mailbox = new BlockingQueue[Message].with_actor(self)
+
+	# Is `self` working ?
+	var working = false
 
 	redef fun main do
 		loop
 			var m = mailbox.shift
-			if m isa ShutDownMessage then return null
+			if m isa ShutDownMessage then
+				sys.active_actors.remove(self)
+				return null
+			end
 			m.invoke(instance)
+			if mailbox.is_empty then
+				working = false
+				sys.active_actors.remove(self)
+			end
 		end
 	end
 
@@ -78,13 +88,50 @@ class Proxy
 	end
 
 	# Wait for `actor` to terminate
-	fun join do
-		terminate
-		actor.join
-	end
+	fun wait_termination do actor.join
 end
 
 # A Message to Rule them all... properly shutdown an Actor
 class ShutDownMessage
 	super Message
+end
+
+redef class BlockingQueue[E]
+
+	# The associated actor
+	var actor: Actor is noautoinit
+
+	# Used to block or signal on waiting threads
+	private var cond = new PthreadCond
+
+	# init self with an associated actor
+	init with_actor(actor: Actor) do  self.actor = actor
+
+	# Adding the signal to release eventual waiting thread(s)
+	redef fun push(e) do
+		mutex.lock
+		if real_collection.is_empty and not actor.working then
+			actor.working = true
+			sys.active_actors.push(actor)
+		end
+		real_collection.push(e)
+		self.cond.signal
+		mutex.unlock
+	end
+
+	redef fun unshift(e) do
+		mutex.lock
+		real_collection.unshift(e)
+		self.cond.signal
+		mutex.unlock
+	end
+
+	# If the real collection is empty, we wait
+	redef fun shift do
+		mutex.lock
+		while real_collection.is_empty do self.cond.wait(mutex)
+		var r = real_collection.shift
+		mutex.unlock
+		return r
+	end
 end
