@@ -260,7 +260,7 @@ nit_module.header = """
 """
 
 for mmod in mmodules do nit_module.imports.add mmod.name
-nit_module.imports.add("threaded_actors")
+nit_module.imports.add("actors::threaded_actors")
 
 var phase = toolcontext.actor_phase
 assert phase isa ActorPhase
