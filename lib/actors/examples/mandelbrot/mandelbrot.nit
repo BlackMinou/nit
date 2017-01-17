@@ -12,11 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-module mandelbrot
+# Example implemented from "The computer Language Benchmarks Game" - Mandelbrot
+# http://benchmarksgame.alioth.debian.org/
+#
+# Complete description of mandelbrot :
+# https://benchmarksgame.alioth.debian.org/u64q/mandelbrot-description.html#mandelbrot
+module mandelbrot is no_warning("missing-doc")
 
 import actors
-import threaded_actors
+import actors::threaded_actors
 
 class Worker
 	actor
@@ -33,7 +37,7 @@ class Worker
 			var zi2 = cib[y]
 
 			var b = 0
-			for j in [0..50[ do
+			for j in [0..49[ do
 				var nzr1 = zr1 * zr1 - zi1 * zi1 + crb[x+i]
 				var nzi1 = zr1 * zi1 + zr1 * zi1 + cib[y]
 				zr1 = nzr1
@@ -64,7 +68,6 @@ class Worker
 	end
 end
 
-
 redef class Sys
 	var inv_n: Float is noautoinit
 	var data: Array[Array[Byte]] is noautoinit
@@ -72,7 +75,6 @@ redef class Sys
 	var cib: Array[Float] is noautoinit
 	var nb_threads = 10
 end
-
 
 var n = args[0].to_i
 sys.crb = new Array[Float].with_capacity(n + 7)
@@ -93,7 +95,11 @@ for i in [0..nb_threads[ do
 	a.async.work
 end
 
-for a in actors do a.async.join
+for a in actors do
+	a.async.terminate
+	a.async.wait_termination
+end
+
 # sequential approach
 #var w = new Worker
 #w.work
