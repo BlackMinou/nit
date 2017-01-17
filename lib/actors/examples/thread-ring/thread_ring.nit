@@ -20,6 +20,7 @@
 module thread_ring
 
 import actors
+import threaded_actors
 
 # One Actor, who will receive the token
 class ThreadRing
@@ -35,9 +36,10 @@ class ThreadRing
 	fun send_token(message: Int) do
 		if message == 0 then
 			print id
-			exit(0)
 		end
-		next.async.send_token(message - 1)
+		if message >= 1 then
+			next.async.send_token(message - 1)
+		end
 	end
 end
 
@@ -51,10 +53,3 @@ for i in [3..503] do
 end
 current.next = first
 first.send_token(args[0].to_i)
-# The next lines are used so the main thread isn't taking an entire CPU
-# And the program doesn't exit too quickly ...
-var m = new Mutex
-var c = new PthreadCond
-m.lock
-c.wait(m)
-m.unlock
