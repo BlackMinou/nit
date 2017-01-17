@@ -111,3 +111,43 @@ class BlockingQueue[E]
 		return r
 	end
 end
+
+# A collection which `is_empty` method blocks until it's empty
+class ReverseBlockingQueue[E]
+	super ConcurrentList[E]
+
+	# Used to block or signal on waiting threads
+	private var cond = new PthreadCond
+
+	# Adding the signal to release eventual waiting thread(s)
+	redef fun push(e) do
+		mutex.lock
+		real_collection.push(e)
+		mutex.unlock
+	end
+
+	redef fun remove(e) do
+		mutex.lock
+		real_collection.remove(e)
+		if real_collection.is_empty then cond.signal
+		mutex.unlock
+	end
+
+	redef fun is_empty do
+		mutex.lock
+		while not real_collection.is_empty do self.cond.wait(mutex)
+		mutex.unlock
+		return true
+	end
+end
+
+
+redef class Sys
+	# List of running actors
+	var active_actors: ReverseBlockingQueue[Actor] is lazy do return new ReverseBlockingQueue[Actor]
+
+	redef fun run do
+		super
+		active_actors.is_empty
+	end
+end
