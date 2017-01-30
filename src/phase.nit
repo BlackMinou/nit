@@ -137,6 +137,7 @@ redef class ToolContext
 				if errcount != self.error_count then
 					self.check_errors
 				end
+				phase.process_nmodule_after(nmodule)
 			end
 			self.check_errors
 		end
@@ -231,6 +232,7 @@ abstract class Phase
 	# @toimplement
 	fun process_nmodule(nmodule: AModule) do end
 
+
 	# Specific actions to execute on the tree of a class definition
 	# Note that the order of the visit is the one of the file
 	# @toimplement
@@ -245,4 +247,10 @@ abstract class Phase
 	# Note that the order of the visit is the one of the file
 	# @toimplement
 	fun process_annotated_node(node: ANode, nat: AAnnotation) do end
+
+	# Specific actions to execute on the whole tree of a module
+	# Called at the end of a phase on a module
+	# Last called hook
+	# @toimplement
+	fun process_nmodule_after(nmodule: AModule) do end
 end
